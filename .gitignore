@@ -35,6 +35,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Personal documents
+Documents/
+
 # Backend secrets
 backend/.env
 
