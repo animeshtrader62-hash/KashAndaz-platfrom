@@ -29,5 +29,5 @@ class ApiConstants {
 class AppConfig {
   /// Set to true during development to bypass login and always show Home.
   /// Set to false for production builds.
-  static const bool bypassAuth = true;
+  static const bool bypassAuth = false;
 }
