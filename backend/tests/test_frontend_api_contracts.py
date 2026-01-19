@@ -61,6 +61,8 @@ async def test_home_wallet_profile_transactions(client, db_session_override):
     headers = {"Authorization": f"Bearer {token}"}
 
     async with client as ac:
+        res = await ac.get("/api/home")
+        assert res.status_code == 200
         res = await ac.get("/api/home", headers=headers)
         assert res.status_code == 200
         res = await ac.get("/api/wallet", headers=headers)

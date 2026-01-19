@@ -50,7 +50,7 @@ async def test_list_stores_and_activate(client, db_session_override):
     headers = {"Authorization": f"Bearer {token}"}
 
     async with client as ac:
-        res = await ac.get("/api/stores", headers=headers)
+        res = await ac.get("/api/stores")
         assert res.status_code == 200
         data = res.json()
         assert "stores" in data
