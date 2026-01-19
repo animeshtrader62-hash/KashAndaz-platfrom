@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     app_port: int = 8000
     app_log_level: str = "INFO"
 
+    api_base_url: str = "http://localhost:8000"
+
     database_url: str = "postgresql+psycopg://user:pass@localhost:5432/kashandaz"
     redis_url: str = "redis://localhost:6379/0"
 
@@ -25,6 +27,12 @@ class Settings(BaseSettings):
 
     fcm_server_key: str | None = None
     ses_sender_email: str | None = None
+
+    payout_provider: str | None = None
+    s3_bucket: str | None = None
+    s3_region: str | None = None
+    s3_access_key: str | None = None
+    s3_secret_key: str | None = None
 
     min_withdrawal_amount: float = 50.0
 
