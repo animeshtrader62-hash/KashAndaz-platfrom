@@ -39,218 +39,223 @@ class ProfileScreen extends ConsumerWidget {
           body: SingleChildScrollView(
             child: Column(
               children: [
-            // Profile header - WHITE BACKGROUND with orange accent
-            Container(
-              width: double.infinity,
-              color: Colors.white,
-              padding: const EdgeInsets.all(AppTheme.spacingLarge),
-              child: Column(
-                children: [
-                  // Avatar with orange ring
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.primaryOrange,
-                        width: 3,
-                      ),
-                    ),
-                    child: const CircleAvatar(
-                      radius: 50,
-                      backgroundColor: AppTheme.primaryOrangeLight,
-                      child: Icon(
-                        Icons.person,
-                        size: 50,
-                        color: AppTheme.primaryOrange,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.spacingMedium),
-                  const Text(
-                    'John Doe',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.spacingXs),
-                  const Text(
-                    'john.doe@example.com',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.spacingXs),
-                  const Text(
-                    '+91 98765 43210',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppTheme.spacingMedium),
-
-            // Account section
-            _buildSection(
-              context,
-              'Account',
-              [
-                _buildListTile(
-                  context,
-                  Icons.person_outline,
-                  'Edit Profile',
-                  () {},
-                ),
-                _buildListTile(
-                  context,
-                  Icons.lock_outline,
-                  'Change Password',
-                  () {},
-                ),
-                _buildListTile(
-                  context,
-                  Icons.payment,
-                  'Payment Methods',
-                  () {},
-                ),
-              ],
-            ),
-
-            const Divider(height: 1),
-
-            // App section
-            _buildSection(
-              context,
-              'App Settings',
-              [
-                _buildListTile(
-                  context,
-                  Icons.notifications_outlined,
-                  'Notifications',
-                  () {},
-                ),
-                _buildListTile(
-                  context,
-                  Icons.language,
-                  'Language',
-                  () {},
-                  trailing: const Text('English'),
-                ),
-                _buildListTile(
-                  context,
-                  Icons.dark_mode_outlined,
-                  'Dark Mode',
-                  null,
-                  trailing: Switch(
-                    value: false,
-                    onChanged: (value) {},
-                    activeColor: AppTheme.primaryOrange,
-                  ),
-                ),
-              ],
-            ),
-
-            const Divider(height: 1),
-
-            // Support section
-            _buildSection(
-              context,
-              'Support',
-              [
-                _buildListTile(
-                  context,
-                  Icons.help_outline,
-                  'Help & FAQ',
-                  () {},
-                ),
-                _buildListTile(
-                  context,
-                  Icons.description_outlined,
-                  'Terms & Conditions',
-                  () {},
-                ),
-                _buildListTile(
-                  context,
-                  Icons.privacy_tip_outlined,
-                  'Privacy Policy',
-                  () {},
-                ),
-                _buildListTile(
-                  context,
-                  Icons.info_outline,
-                  'About',
-                  () {},
-                  trailing: const Text('v1.0.0'),
-                ),
-              ],
-            ),
-
-            const Divider(height: 1),
-
-            // Logout button
-            Padding(
-              padding: const EdgeInsets.all(AppTheme.spacingMedium),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _showLogoutDialog(context, ref);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.errorRed,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingMedium),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                // Profile header - WHITE BACKGROUND with orange accent
+                Container(
+                  width: double.infinity,
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(AppTheme.spacingLarge),
+                  child: Column(
                     children: [
-                      const Icon(Icons.logout),
-                      const SizedBox(width: AppTheme.spacingSmall),
-                      Text(
-                        'Logout',
-                        style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                      // Avatar with orange ring
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppTheme.primaryOrange,
+                            width: 3,
+                          ),
+                        ),
+                        child: const CircleAvatar(
+                          radius: 50,
+                          backgroundColor: AppTheme.primaryOrangeLight,
+                          child: Icon(
+                            Icons.person,
+                            size: 50,
+                            color: AppTheme.primaryOrange,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.spacingMedium),
+                      const Text(
+                        'John Doe',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.spacingXs),
+                      const Text(
+                        'john.doe@example.com',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.spacingXs),
+                      const Text(
+                        '+91 98765 43210',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.textSecondary,
+                        ),
                       ),
                     ],
                   ),
-                    ],
+                ),
+
+                const SizedBox(height: AppTheme.spacingMedium),
+
+                // Account section
+                _buildSection(
+                  context,
+                  'Account',
+                  [
+                    _buildListTile(
+                      context,
+                      Icons.person_outline,
+                      'Edit Profile',
+                      () {},
+                    ),
+                    _buildListTile(
+                      context,
+                      Icons.lock_outline,
+                      'Change Password',
+                      () {},
+                    ),
+                    _buildListTile(
+                      context,
+                      Icons.payment,
+                      'Payment Methods',
+                      () {},
+                    ),
+                  ],
+                ),
+
+                const Divider(height: 1),
+
+                // App section
+                _buildSection(
+                  context,
+                  'App Settings',
+                  [
+                    _buildListTile(
+                      context,
+                      Icons.notifications_outlined,
+                      'Notifications',
+                      () {},
+                    ),
+                    _buildListTile(
+                      context,
+                      Icons.language,
+                      'Language',
+                      () {},
+                      trailing: const Text('English'),
+                    ),
+                    _buildListTile(
+                      context,
+                      Icons.dark_mode_outlined,
+                      'Dark Mode',
+                      null,
+                      trailing: Switch(
+                        value: false,
+                        onChanged: (value) {},
+                        activeColor: AppTheme.primaryOrange,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const Divider(height: 1),
+
+                // Support section
+                _buildSection(
+                  context,
+                  'Support',
+                  [
+                    _buildListTile(
+                      context,
+                      Icons.help_outline,
+                      'Help & FAQ',
+                      () {},
+                    ),
+                    _buildListTile(
+                      context,
+                      Icons.description_outlined,
+                      'Terms & Conditions',
+                      () {},
+                    ),
+                    _buildListTile(
+                      context,
+                      Icons.privacy_tip_outlined,
+                      'Privacy Policy',
+                      () {},
+                    ),
+                    _buildListTile(
+                      context,
+                      Icons.info_outline,
+                      'About',
+                      () {},
+                      trailing: const Text('v1.0.0'),
+                    ),
+                  ],
+                ),
+
+                const Divider(height: 1),
+
+                // Logout button
+                Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showLogoutDialog(context, ref);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.errorRed,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppTheme.spacingMedium,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.logout),
+                          const SizedBox(width: AppTheme.spacingSmall),
+                          Text(
+                            'Logout',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              );
-            },
-            loading: () => Scaffold(
-              backgroundColor: AppTheme.scaffoldBg,
-              appBar: AppBar(
-                title: const Text('Profile'),
-                backgroundColor: Colors.white,
-                foregroundColor: AppTheme.textPrimary,
-                elevation: 0,
-              ),
-              body: const Center(child: CircularProgressIndicator()),
+
+                const SizedBox(height: AppTheme.spacingLarge),
+              ],
             ),
-            error: (err, stack) => Scaffold(
-              backgroundColor: AppTheme.scaffoldBg,
-              appBar: AppBar(
-                title: const Text('Profile'),
-                backgroundColor: Colors.white,
-                foregroundColor: AppTheme.textPrimary,
-                elevation: 0,
-              ),
-              body: const LoginRequiredView(
-                message: 'Please login to view your profile.',
-              ),
-            ),
-          );
-            const SizedBox(height: AppTheme.spacingLarge),
-          ],
+          ),
+        );
+      },
+      loading: () => Scaffold(
+        backgroundColor: AppTheme.scaffoldBg,
+        appBar: AppBar(
+          title: const Text('Profile'),
+          backgroundColor: Colors.white,
+          foregroundColor: AppTheme.textPrimary,
+          elevation: 0,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, stack) => Scaffold(
+        backgroundColor: AppTheme.scaffoldBg,
+        appBar: AppBar(
+          title: const Text('Profile'),
+          backgroundColor: Colors.white,
+          foregroundColor: AppTheme.textPrimary,
+          elevation: 0,
+        ),
+        body: const LoginRequiredView(
+          message: 'Please login to view your profile.',
         ),
       ),
     );
