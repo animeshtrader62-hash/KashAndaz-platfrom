@@ -1,7 +1,7 @@
 /// API Constants and Configuration
 class ApiConstants {
   // TODO: Replace with actual backend URL
-  static const String baseUrl = 'https://api.kashandaz.com';
+  static const String baseUrl = 'http://localhost:8000';
 
   // API Endpoints
   static const String authRegister = '/api/auth/register';
