@@ -5,7 +5,6 @@ import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/signup_screen.dart';
 import 'features/home/home_screen.dart';
-import 'core/utils/constants.dart';
 import 'features/transactions/transactions_screen.dart';
 import 'features/wallet/wallet_screen.dart';
 import 'features/profile/profile_screen.dart';
@@ -52,24 +51,10 @@ class AuthGate extends ConsumerWidget {
 
     return authState.when(
       data: (user) {
-        if (AppConfig.bypassAuth) {
-          return const HomeScreen();
-        }
-        if (user != null) {
-          return const HomeScreen();
-        }
-        return const LoginScreen();
+        return const HomeScreen();
       },
-      loading: () => AppConfig.bypassAuth
-          ? const HomeScreen()
-          : const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-      error: (err, stack) => AppConfig.bypassAuth
-          ? const HomeScreen()
-          : const LoginScreen(),
+      loading: () => const HomeScreen(),
+      error: (err, stack) => const HomeScreen(),
     );
   }
 }

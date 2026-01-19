@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../theme/app_theme.dart';
+import '../../core/widgets/login_required.dart';
+import '../auth/providers/auth_provider.dart';
 import 'providers/transaction_provider.dart';
 import 'models/transaction_models.dart';
 import 'transaction_detail_screen.dart';
@@ -19,68 +21,107 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final transactions = ref.watch(transactionsProvider(_selectedStatus));
+    final authState = ref.watch(authProvider);
 
-    return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
-      appBar: AppBar(
-        title: const Text('My Cashback'),
-        backgroundColor: AppTheme.primaryOrange,
-        foregroundColor: Colors.white,
-      ),
-      body: Column(
-        children: [
-          _buildFilterChips(),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                ref.invalidate(transactionsProvider(_selectedStatus));
-              },
-              child: transactions.when(
-                data: (list) {
-                  if (list.isEmpty) {
-                    return _buildEmptyState();
-                  }
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(AppTheme.screenPadding),
-                    itemCount: list.length,
-                    itemBuilder: (context, index) {
-                      return TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0.0, end: 1.0),
-                        duration: Duration(milliseconds: 300 + (index * 50)),
-                        curve: Curves.easeOut,
-                        builder: (context, value, child) {
-                          return Transform.translate(
-                            offset: Offset(0, 20 * (1 - value)),
-                            child: Opacity(
-                              opacity: value,
-                              child: child,
+    return authState.when(
+      data: (user) {
+        if (user == null) {
+          return Scaffold(
+            backgroundColor: AppTheme.scaffoldBg,
+            appBar: AppBar(
+              title: const Text('My Cashback'),
+              backgroundColor: AppTheme.primaryOrange,
+              foregroundColor: Colors.white,
+            ),
+            body: const LoginRequiredView(
+              message: 'Please login to view your cashback history.',
+            ),
+          );
+        }
+
+        final transactions = ref.watch(transactionsProvider(_selectedStatus));
+        return Scaffold(
+          backgroundColor: AppTheme.scaffoldBg,
+          appBar: AppBar(
+            title: const Text('My Cashback'),
+            backgroundColor: AppTheme.primaryOrange,
+            foregroundColor: Colors.white,
+          ),
+          body: Column(
+            children: [
+              _buildFilterChips(),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(transactionsProvider(_selectedStatus));
+                  },
+                  child: transactions.when(
+                    data: (list) {
+                      if (list.isEmpty) {
+                        return _buildEmptyState();
+                      }
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(AppTheme.screenPadding),
+                        itemCount: list.length,
+                        itemBuilder: (context, index) {
+                          return TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0.0, end: 1.0),
+                            duration: Duration(milliseconds: 300 + (index * 50)),
+                            curve: Curves.easeOut,
+                            builder: (context, value, child) {
+                              return Transform.translate(
+                                offset: Offset(0, 20 * (1 - value)),
+                                child: Opacity(
+                                  opacity: value,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: CashbackTransactionCard(
+                              transaction: list[index],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TransactionDetailScreen(
+                                      transactionId: list[index].id,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           );
                         },
-                        child: CashbackTransactionCard(
-                          transaction: list[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TransactionDetailScreen(
-                                  transactionId: list[index].id,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
                       );
                     },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => _buildErrorState(err),
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => _buildErrorState(err),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        );
+      },
+      loading: () => Scaffold(
+        backgroundColor: AppTheme.scaffoldBg,
+        appBar: AppBar(
+          title: const Text('My Cashback'),
+          backgroundColor: AppTheme.primaryOrange,
+          foregroundColor: Colors.white,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, stack) => Scaffold(
+        backgroundColor: AppTheme.scaffoldBg,
+        appBar: AppBar(
+          title: const Text('My Cashback'),
+          backgroundColor: AppTheme.primaryOrange,
+          foregroundColor: Colors.white,
+        ),
+        body: const LoginRequiredView(
+          message: 'Please login to view your cashback history.',
+        ),
       ),
     );
   }

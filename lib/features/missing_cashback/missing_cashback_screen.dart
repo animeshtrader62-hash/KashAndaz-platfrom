@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
+import '../../core/widgets/login_required.dart';
+import '../auth/providers/auth_provider.dart';
 
 /// Missing Cashback Screen - EXACT STRUCTURE FROM HAND-DRAWN UI
 /// 
@@ -21,20 +23,43 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
-      appBar: AppBar(
-        title: const Text('Missing Cashback'),
-        backgroundColor: AppTheme.primaryBlue,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Column(
-        children: [
+    final authState = ref.watch(authProvider);
+
+    return authState.when(
+      data: (user) {
+        if (user == null) {
+          return Scaffold(
+            backgroundColor: AppTheme.scaffoldBg,
+            appBar: AppBar(
+              title: const Text('Missing Cashback'),
+              backgroundColor: AppTheme.primaryBlue,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            body: const LoginRequiredView(
+              message: 'Please login to track missing cashback.',
+            ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: AppTheme.scaffoldBg,
+          appBar: AppBar(
+            title: const Text('Missing Cashback'),
+            backgroundColor: AppTheme.primaryBlue,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: Column(
+            children: [
           const SizedBox(height: 16),
           
           // Filter Chips
@@ -135,7 +160,41 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
               ),
             ),
           ),
-        ],
+            ],
+          ),
+        );
+      },
+      loading: () => Scaffold(
+        backgroundColor: AppTheme.scaffoldBg,
+        appBar: AppBar(
+          title: const Text('Missing Cashback'),
+          backgroundColor: AppTheme.primaryBlue,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+        ),
+      ),
+      error: (err, stack) => Scaffold(
+        backgroundColor: AppTheme.scaffoldBg,
+        appBar: AppBar(
+          title: const Text('Missing Cashback'),
+          backgroundColor: AppTheme.primaryBlue,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: const LoginRequiredView(
+          message: 'Please login to track missing cashback.',
+        ),
       ),
     );
   }

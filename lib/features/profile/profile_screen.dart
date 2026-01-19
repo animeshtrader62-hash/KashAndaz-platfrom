@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
+import '../../core/widgets/login_required.dart';
 import '../auth/providers/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -8,17 +9,36 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
-      appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Colors.white,
-        foregroundColor: AppTheme.textPrimary,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
+    final authState = ref.watch(authProvider);
+
+    return authState.when(
+      data: (user) {
+        if (user == null) {
+          return Scaffold(
+            backgroundColor: AppTheme.scaffoldBg,
+            appBar: AppBar(
+              title: const Text('Profile'),
+              backgroundColor: Colors.white,
+              foregroundColor: AppTheme.textPrimary,
+              elevation: 0,
+            ),
+            body: const LoginRequiredView(
+              message: 'Please login to view your profile.',
+            ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: AppTheme.scaffoldBg,
+          appBar: AppBar(
+            title: const Text('Profile'),
+            backgroundColor: Colors.white,
+            foregroundColor: AppTheme.textPrimary,
+            elevation: 0,
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
             // Profile header - WHITE BACKGROUND with orange accent
             Container(
               width: double.infinity,
@@ -201,10 +221,34 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
+                    ],
+                  ),
                 ),
+              );
+            },
+            loading: () => Scaffold(
+              backgroundColor: AppTheme.scaffoldBg,
+              appBar: AppBar(
+                title: const Text('Profile'),
+                backgroundColor: Colors.white,
+                foregroundColor: AppTheme.textPrimary,
+                elevation: 0,
+              ),
+              body: const Center(child: CircularProgressIndicator()),
+            ),
+            error: (err, stack) => Scaffold(
+              backgroundColor: AppTheme.scaffoldBg,
+              appBar: AppBar(
+                title: const Text('Profile'),
+                backgroundColor: Colors.white,
+                foregroundColor: AppTheme.textPrimary,
+                elevation: 0,
+              ),
+              body: const LoginRequiredView(
+                message: 'Please login to view your profile.',
               ),
             ),
-
+          );
             const SizedBox(height: AppTheme.spacingLarge),
           ],
         ),
