@@ -9,6 +9,10 @@ from .routes.admin_withdrawals import router as admin_withdrawals_router
 from .routes.claims import router as claims_router
 from .routes.admin_claims import router as admin_claims_router
 from .routes.admin import router as admin_router
+from .routes.home import router as home_router
+from .routes.wallet import router as wallet_router
+from .routes.transactions import router as transactions_router
+from .routes.profile import router as profile_router
 
 api_router = APIRouter()
 api_router.include_router(health_router)
@@ -21,3 +25,7 @@ api_router.include_router(admin_withdrawals_router)
 api_router.include_router(claims_router)
 api_router.include_router(admin_claims_router)
 api_router.include_router(admin_router)
+api_router.include_router(home_router)
+api_router.include_router(wallet_router)
+api_router.include_router(transactions_router)
+api_router.include_router(profile_router)
