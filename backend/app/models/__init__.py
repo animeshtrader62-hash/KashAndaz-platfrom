@@ -6,6 +6,7 @@ from .wallet_ledger import WalletLedger
 from .withdrawal import Withdrawal
 from .claim import Claim
 from .risk_flag import RiskFlag
+from .missing_cashback_request import MissingCashbackRequest
 
 __all__ = [
     "User",
@@ -15,5 +16,6 @@ __all__ = [
     "WalletLedger",
     "Withdrawal",
     "Claim",
+    "MissingCashbackRequest",
     "RiskFlag",
 ]

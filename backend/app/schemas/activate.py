@@ -9,6 +9,7 @@ class ActivateRequest(BaseModel):
 
 class ActivateResponse(BaseModel):
     deep_link: str
+    affiliate_redirect_url: str
     click_id: str
     store_name: str
     message: str

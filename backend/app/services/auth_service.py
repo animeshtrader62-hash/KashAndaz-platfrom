@@ -8,10 +8,18 @@ def get_user_by_email(db: Session, email: str) -> User | None:
 
 
 def create_user(db: Session, name: str, email: str, password: str, phone: str | None) -> User:
+    phone_value: str | None
+    if phone is None:
+        phone_value = None
+    else:
+        phone_value = phone.strip()
+        if phone_value == "":
+            phone_value = None
+
     user = User(
         name=name,
         email=email,
-        phone=phone,
+        phone=phone_value,
         hashed_password=hash_password(password),
         role="user",
     )

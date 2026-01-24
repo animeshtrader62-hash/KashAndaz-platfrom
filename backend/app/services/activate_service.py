@@ -19,6 +19,7 @@ def activate_cashback(db: Session, user: User, store_id: str):
 
     return click, {
         "deep_link": deep_link,
+        "affiliate_redirect_url": deep_link,
         "click_id": click.id,
         "store_name": store.name,
         "message": "Cashback activated! Shop now to earn.",

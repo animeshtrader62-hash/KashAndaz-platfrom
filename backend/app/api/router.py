@@ -13,6 +13,8 @@ from .routes.home import router as home_router
 from .routes.wallet import router as wallet_router
 from .routes.transactions import router as transactions_router
 from .routes.profile import router as profile_router
+from .routes.missing_cashback import router as missing_cashback_router
+from .routes.assets import router as assets_router
 
 api_router = APIRouter()
 api_router.include_router(health_router)
@@ -29,3 +31,5 @@ api_router.include_router(home_router)
 api_router.include_router(wallet_router)
 api_router.include_router(transactions_router)
 api_router.include_router(profile_router)
+api_router.include_router(missing_cashback_router)
+api_router.include_router(assets_router)

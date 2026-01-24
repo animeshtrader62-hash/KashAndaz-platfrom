@@ -42,6 +42,14 @@ Documents/
 backend/.env
 backend/*.db
 
+# Backend runtime artifacts (do not commit)
+backend/uploads/
+backend/uvicorn.out
+backend/uvicorn.err
+
+# Tests are not shipped in this repo
+backend/tests/
+
 # Sensitive keys
 Documents/*.pem
 

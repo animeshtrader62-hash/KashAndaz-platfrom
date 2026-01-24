@@ -3,7 +3,17 @@ from jose import jwt
 from passlib.context import CryptContext
 from .config import settings
 
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+# Passlib's Argon2 defaults can be very expensive on some dev machines (esp. Windows),
+# leading to multi-second login verification. The hash itself encodes its parameters,
+# so lowering *new* hash defaults does not break verification of existing users.
+pwd_context = CryptContext(
+    schemes=["argon2"],
+    deprecated="auto",
+    # Keep time_cost reasonable; reduce memory/parallelism for practical latency.
+    argon2__time_cost=2,
+    argon2__memory_cost=32768,  # KiB (32 MiB)
+    argon2__parallelism=2,
+)
 
 
 def hash_password(password: str) -> str:
