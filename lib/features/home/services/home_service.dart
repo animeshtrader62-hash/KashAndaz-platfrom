@@ -31,21 +31,6 @@ class HomeService {
         wallet: WalletSummary(totalEarned: 0, pending: 0, available: 0),
         topStores: top,
       );
-    } on ApiServerException {
-      // If /api/home fails (e.g., temporary backend issue), try to keep Home usable.
-      try {
-        final stores = await getStores(cancelToken: cancelToken);
-        final top = stores.length > 10 ? stores.sublist(0, 10) : stores;
-        return HomeData(
-          wallet: WalletSummary(totalEarned: 0, pending: 0, available: 0),
-          topStores: top,
-        );
-      } catch (_) {
-        return HomeData(
-          wallet: WalletSummary(totalEarned: 0, pending: 0, available: 0),
-          topStores: const [],
-        );
-      }
     }
   }
 
