@@ -15,7 +15,13 @@ class HomeService {
   Future<HomeData> getHomeData({CancelToken? cancelToken}) async {
     try {
       final response = await _apiClient.get(ApiConstants.home, cancelToken: cancelToken);
-      return HomeData.fromJson(response.data);
+      final data = (response.data is Map<String, dynamic>)
+          ? (response.data as Map<String, dynamic>)
+          : <String, dynamic>{};
+
+      // Backend guarantee: always returns a safe shape; status may be present.
+      // Treat empty but ok payload as success (wallet=0, stores=[]).
+      return HomeData.fromJson(data);
     } on ApiUnauthenticatedException {
       // If a stale/invalid token is present, /api/home (optional auth) may return 401.
       // Guests must still be able to browse Home, so fall back to public stores.
@@ -25,6 +31,21 @@ class HomeService {
         wallet: WalletSummary(totalEarned: 0, pending: 0, available: 0),
         topStores: top,
       );
+    } on ApiServerException {
+      // If /api/home fails (e.g., temporary backend issue), try to keep Home usable.
+      try {
+        final stores = await getStores(cancelToken: cancelToken);
+        final top = stores.length > 10 ? stores.sublist(0, 10) : stores;
+        return HomeData(
+          wallet: WalletSummary(totalEarned: 0, pending: 0, available: 0),
+          topStores: top,
+        );
+      } catch (_) {
+        return HomeData(
+          wallet: WalletSummary(totalEarned: 0, pending: 0, available: 0),
+          topStores: const [],
+        );
+      }
     }
   }
 

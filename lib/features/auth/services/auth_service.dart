@@ -22,6 +22,9 @@ class AuthService {
     
     // Save token and user data
     await _storage.saveAuthToken(authResponse.token);
+    if (authResponse.refreshToken != null && authResponse.refreshToken!.isNotEmpty) {
+      await _storage.saveRefreshToken(authResponse.refreshToken!);
+    }
     await _storage.saveUserId(authResponse.user.id);
     await _storage.saveUserEmail(authResponse.user.email);
 
@@ -39,6 +42,9 @@ class AuthService {
     
     // Save token and user data
     await _storage.saveAuthToken(authResponse.token);
+    if (authResponse.refreshToken != null && authResponse.refreshToken!.isNotEmpty) {
+      await _storage.saveRefreshToken(authResponse.refreshToken!);
+    }
     await _storage.saveUserId(authResponse.user.id);
     await _storage.saveUserEmail(authResponse.user.email);
 

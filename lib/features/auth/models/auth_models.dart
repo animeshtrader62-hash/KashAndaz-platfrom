@@ -3,16 +3,19 @@ import 'user_model.dart';
 /// Authentication response model
 class AuthResponse {
   final String token;
+  final String? refreshToken;
   final User user;
 
   AuthResponse({
     required this.token,
+    this.refreshToken,
     required this.user,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
       token: json['token'] as String,
+      refreshToken: (json['refresh_token'] ?? json['refreshToken']) as String?,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
     );
   }
@@ -20,6 +23,7 @@ class AuthResponse {
   Map<String, dynamic> toJson() {
     return {
       'token': token,
+      if (refreshToken != null) 'refresh_token': refreshToken,
       'user': user.toJson(),
     };
   }

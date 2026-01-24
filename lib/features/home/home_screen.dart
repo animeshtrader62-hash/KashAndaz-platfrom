@@ -671,18 +671,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
   }
 
   Widget _buildErrorState(Object err) {
-    final isNetwork = err is ApiNetworkException || err is ApiTimeoutException;
+    final isNetwork = err is ApiNetworkException;
+    final isTimeout = err is ApiTimeoutException;
+    final isServer = err is ApiServerException;
     final isUnauth = err is ApiUnauthenticatedException;
 
     final title = isNetwork
-        ? 'No Internet Connection'
-        : isUnauth
+      ? 'No Internet Connection'
+      : isTimeout
+        ? 'Request timed out'
+        : isServer
+          ? 'Server temporarily unavailable'
+          : isUnauth
             ? 'You are signed out'
             : 'Oops! Something went wrong';
 
     final message = isNetwork
-        ? 'Please check your internet connection and try again'
-        : isUnauth
+      ? 'Please check your internet connection and try again'
+      : isTimeout
+        ? 'The server took too long to respond. Please try again.'
+        : isServer
+          ? (err as ApiServerException).message
+          : isUnauth
             ? 'You can still browse stores as a guest.'
             : err.toString();
 
@@ -693,7 +703,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              isNetwork ? Icons.wifi_off_rounded : Icons.error_outline,
+              (isNetwork || isTimeout) ? Icons.wifi_off_rounded : Icons.error_outline,
               size: 56,
               color: AppTheme.textLight,
             ),
@@ -722,7 +732,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
               child: ElevatedButton(
                 onPressed: () => ref.invalidate(homeDataProvider),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isNetwork ? AppTheme.primaryBlue : AppTheme.cashbackOrange,
+                  backgroundColor: (isNetwork || isTimeout)
+                      ? AppTheme.primaryBlue
+                      : AppTheme.cashbackOrange,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

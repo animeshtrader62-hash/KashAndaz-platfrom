@@ -13,10 +13,15 @@ class WalletSummary {
   });
 
   factory WalletSummary.fromJson(Map<String, dynamic> json) {
+    double _num(dynamic v) {
+      if (v is num) return v.toDouble();
+      return double.tryParse(v?.toString() ?? '') ?? 0.0;
+    }
+
     return WalletSummary(
-      totalEarned: (json['total_earned'] as num).toDouble(),
-      pending: (json['pending'] as num).toDouble(),
-      available: (json['available'] as num).toDouble(),
+      totalEarned: _num(json['total_earned']),
+      pending: _num(json['pending']),
+      available: _num(json['available']),
       currency: json['currency'] as String? ?? 'INR',
     );
   }
@@ -102,10 +107,18 @@ class HomeData {
   });
 
   factory HomeData.fromJson(Map<String, dynamic> json) {
+    final walletJson = (json['wallet'] is Map<String, dynamic>)
+        ? (json['wallet'] as Map<String, dynamic>)
+        : <String, dynamic>{};
+
+    final topStoresRaw = json['top_stores'];
+    final topStoresList = topStoresRaw is List ? topStoresRaw : const [];
+
     return HomeData(
-      wallet: WalletSummary.fromJson(json['wallet'] as Map<String, dynamic>),
-      topStores: (json['top_stores'] as List)
-          .map((store) => Store.fromJson(store as Map<String, dynamic>))
+      wallet: WalletSummary.fromJson(walletJson),
+      topStores: topStoresList
+          .whereType<Map>()
+          .map((store) => Store.fromJson(Map<String, dynamic>.from(store)))
           .toList(),
     );
   }

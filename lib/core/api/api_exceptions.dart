@@ -25,6 +25,15 @@ class ApiTimeoutException implements Exception {
   String toString() => message;
 }
 
+class ApiServerException implements Exception {
+  final String message;
+
+  ApiServerException([this.message = 'Server error. Please try again later.']);
+
+  @override
+  String toString() => message;
+}
+
 class ApiCancelledException implements Exception {
   final String message;
 

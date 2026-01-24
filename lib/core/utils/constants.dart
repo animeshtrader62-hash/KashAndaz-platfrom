@@ -4,35 +4,24 @@ import 'package:flutter/foundation.dart';
 class ApiConstants {
   static const String _baseUrlOverride = String.fromEnvironment('API_BASE_URL');
 
+  // Production default. If you don't pass --dart-define=API_BASE_URL=...,
+  // the app will use this.
+  static const String _defaultBaseUrl = 'https://api.kashandaz.com';
+
   /// Backend base URL.
-  /// - Web uses 127.0.0.1 (IPv4 loopback).
-  /// - Android emulator must use 10.0.2.2 to reach host machine.
   static String get baseUrl {
-    String url;
+    final raw = (_baseUrlOverride.isNotEmpty ? _baseUrlOverride : _defaultBaseUrl).trim();
+    final normalized = raw.replaceAll(RegExp(r'/+$'), '');
 
-    if (_baseUrlOverride.isNotEmpty) {
-      url = _baseUrlOverride;
-    } else if (kIsWeb) {
-      url = 'http://127.0.0.1:8000';
-    } else {
-      switch (defaultTargetPlatform) {
-        case TargetPlatform.android:
-          url = 'http://10.0.2.2:8000';
-        default:
-          url = 'http://localhost:8000';
-      }
+    final uri = Uri.tryParse(normalized);
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+      throw StateError('Invalid API_BASE_URL: "$raw"');
+    }
+    if (uri.scheme != 'https') {
+      throw StateError('API_BASE_URL must use HTTPS (got: ${uri.scheme})');
     }
 
-    // On Windows, `localhost` may resolve to IPv6 (::1). Uvicorn commonly
-    // listens on IPv4 only (0.0.0.0/127.0.0.1), which causes web requests to
-    // hang/timeout. Force IPv4 loopback for Flutter web.
-    if (kIsWeb) {
-      url = url
-          .replaceFirst('http://localhost', 'http://127.0.0.1')
-          .replaceFirst('https://localhost', 'https://127.0.0.1');
-    }
-
-    return url;
+    return normalized;
   }
 
   // API Endpoints

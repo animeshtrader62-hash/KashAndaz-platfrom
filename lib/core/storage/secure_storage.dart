@@ -6,6 +6,7 @@ class SecureStorageService {
 
   // Storage keys
   static const String _keyAuthToken = 'auth_token';
+  static const String _keyRefreshToken = 'refresh_token';
   static const String _keyUserId = 'user_id';
   static const String _keyUserEmail = 'user_email';
 
@@ -14,9 +15,19 @@ class SecureStorageService {
     await _storage.write(key: _keyAuthToken, value: token);
   }
 
+  /// Save refresh token (if provided by backend)
+  Future<void> saveRefreshToken(String token) async {
+    await _storage.write(key: _keyRefreshToken, value: token);
+  }
+
   /// Get authentication token
   Future<String?> getAuthToken() async {
     return await _storage.read(key: _keyAuthToken);
+  }
+
+  /// Get refresh token
+  Future<String?> getRefreshToken() async {
+    return await _storage.read(key: _keyRefreshToken);
   }
 
   /// Save user ID

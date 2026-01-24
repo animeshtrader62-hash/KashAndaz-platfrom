@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../storage/secure_storage.dart';
 import '../utils/constants.dart';
 import 'api_interceptor.dart';
@@ -10,10 +11,10 @@ class ApiClient {
   final SecureStorageService _storage;
 
   ApiClient(this._storage) {
-    // Helpful for debugging device/emulator/web base URL issues.
-    // Remove later if you don't want this log.
-    // ignore: avoid_print
-    print('[ApiClient] baseUrl=${ApiConstants.baseUrl}');
+    if (kDebugMode) {
+      // ignore: avoid_print
+      print('[ApiClient] baseUrl=${ApiConstants.baseUrl}');
+    }
 
     _dio = Dio(
       BaseOptions(
@@ -119,7 +120,7 @@ class ApiClient {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return ApiTimeoutException('Connection timeout. Please check your internet.');
+        return ApiTimeoutException('Request timed out. Please try again.');
       
       case DioExceptionType.badResponse:
         return _handleResponseError(error.response);
@@ -131,6 +132,13 @@ class ApiClient {
         return ApiNetworkException('No internet connection');
       
       default:
+        final msg = (error.message ?? '').toLowerCase();
+        if (msg.contains('handshake') || msg.contains('certificate')) {
+          return ApiServerException('Server temporarily unavailable. Please try again later.');
+        }
+        if (msg.contains('failed host lookup') || msg.contains('network is unreachable')) {
+          return ApiNetworkException('No internet connection');
+        }
         return Exception('Something went wrong. Please try again.');
     }
   }
@@ -182,8 +190,11 @@ class ApiClient {
       case 422:
         return Exception(message);
       case 500:
-        return Exception('Server error. Please try again later.');
+        return ApiServerException('Server error. Please try again later.');
       default:
+        if (statusCode != null && statusCode >= 500) {
+          return ApiServerException('Server temporarily unavailable. Please try again later.');
+        }
         return Exception(message);
     }
   }
