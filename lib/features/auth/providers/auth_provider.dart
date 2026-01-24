@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 import '../../../core/api/providers.dart';
+import '../../../core/utils/constants.dart';
 import '../models/auth_models.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
@@ -29,7 +31,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       } else {
         state = const AsyncValue.data(null);
       }
-    } catch (e, stack) {
+    } catch (e) {
       // If storage fails (common on web), just show login
       state = const AsyncValue.data(null);
     }
@@ -40,8 +42,13 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     state = const AsyncValue.loading();
     try {
       final request = LoginRequest(email: email, password: password);
-      final response = await _authService.login(request);
+      final response = await _authService
+          .login(request)
+          .timeout(ApiConstants.receiveTimeout);
       state = AsyncValue.data(response.user);
+    } on TimeoutException catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      throw Exception('Login timed out. Please check internet/server and try again.');
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
       rethrow;
@@ -63,8 +70,13 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
         password: password,
         phone: phone,
       );
-      final response = await _authService.signup(request);
+      final response = await _authService
+          .signup(request)
+          .timeout(ApiConstants.receiveTimeout);
       state = AsyncValue.data(response.user);
+    } on TimeoutException catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      throw Exception('Signup timed out. Please check internet/server and try again.');
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
       rethrow;

@@ -14,7 +14,7 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 });
 
 /// Provider to check authentication status
-final authStatusProvider = FutureProvider<bool>((ref) async {
+final authStatusProvider = FutureProvider.autoDispose<bool>((ref) async {
   final storage = ref.watch(secureStorageProvider);
   return await storage.isAuthenticated();
 });

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../theme/app_theme.dart';
 import '../../core/widgets/login_required.dart';
+import '../../core/utils/page_transitions.dart';
 import '../auth/providers/auth_provider.dart';
 import 'providers/transaction_provider.dart';
-import 'models/transaction_models.dart';
 import 'transaction_detail_screen.dart';
 import 'widgets/cashback_transaction_card.dart';
 
@@ -62,34 +61,23 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       }
                       return ListView.builder(
                         padding: const EdgeInsets.all(AppTheme.screenPadding),
+                        cacheExtent: 300,
+                        addAutomaticKeepAlives: false,
+                        addRepaintBoundaries: true,
                         itemCount: list.length,
                         itemBuilder: (context, index) {
-                          return TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 0.0, end: 1.0),
-                            duration: Duration(milliseconds: 300 + (index * 50)),
-                            curve: Curves.easeOut,
-                            builder: (context, value, child) {
-                              return Transform.translate(
-                                offset: Offset(0, 20 * (1 - value)),
-                                child: Opacity(
-                                  opacity: value,
-                                  child: child,
+                          return CashbackTransactionCard(
+                            transaction: list[index],
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                SlidePageRoute(
+                                  page: TransactionDetailScreen(
+                                    transactionId: list[index].id,
+                                  ),
                                 ),
                               );
                             },
-                            child: CashbackTransactionCard(
-                              transaction: list[index],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TransactionDetailScreen(
-                                      transactionId: list[index].id,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
                           );
                         },
                       );
@@ -127,21 +115,28 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   }
 
   Widget _buildFilterChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.all(AppTheme.screenPadding),
-      child: Row(
-        children: [
-          _buildFilterChip('All', null),
-          const SizedBox(width: AppTheme.spacingSmall),
-          _buildFilterChip('Pending', 'pending'),
-          const SizedBox(width: AppTheme.spacingSmall),
-          _buildFilterChip('Confirmed', 'confirmed'),
-          const SizedBox(width: AppTheme.spacingSmall),
-          _buildFilterChip('Paid', 'paid'),
-          const SizedBox(width: AppTheme.spacingSmall),
-          _buildFilterChip('Cancelled', 'cancelled'),
-        ],
+    const items = <({String label, String? status})>[
+      (label: 'All', status: null),
+      (label: 'Pending', status: 'pending'),
+      (label: 'Confirmed', status: 'confirmed'),
+      (label: 'Paid', status: 'paid'),
+      (label: 'Cancelled', status: 'cancelled'),
+    ];
+
+    return SizedBox(
+      height: 52,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.all(AppTheme.screenPadding),
+        cacheExtent: 300,
+        addAutomaticKeepAlives: false,
+        addRepaintBoundaries: true,
+        itemCount: items.length,
+        separatorBuilder: (context, index) => const SizedBox(width: AppTheme.spacingSmall),
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return _buildFilterChip(item.label, item.status);
+        },
       ),
     );
   }
@@ -157,7 +152,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         });
       },
       backgroundColor: Colors.white,
-      selectedColor: AppTheme.primaryOrange.withOpacity(0.1),
+      selectedColor: AppTheme.primaryOrange.withAlpha(26),
       labelStyle: TextStyle(
         color: isSelected ? AppTheme.primaryOrange : AppTheme.textSecondary,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../features/auth/screens/login_screen.dart';
+import '../utils/page_transitions.dart';
 
 class LoginRequiredView extends StatelessWidget {
   final String title;
@@ -53,9 +54,7 @@ class LoginRequiredView extends StatelessWidget {
                 onPressed: () async {
                   await Navigator.push<bool>(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(popOnSuccess: true),
-                    ),
+                    SlidePageRoute<bool>(page: const LoginScreen(popOnSuccess: true)),
                   );
                 },
                 style: ElevatedButton.styleFrom(

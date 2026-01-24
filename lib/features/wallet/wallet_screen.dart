@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/navigation/main_scaffold.dart';
+import '../../core/utils/page_transitions.dart';
+import '../../core/widgets/coming_soon_screen.dart';
 import '../../theme/app_theme.dart';
 import '../../core/widgets/login_required.dart';
 import '../auth/providers/auth_provider.dart';
@@ -17,6 +20,18 @@ import 'providers/wallet_provider.dart';
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
 
+  void _openComingSoon(BuildContext context, String title) {
+    Navigator.push(
+      context,
+      SlidePageRoute(
+        page: ComingSoonScreen(
+          title: title,
+          message: "This feature is under development. We’re launching it soon.",
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
@@ -33,7 +48,14 @@ class WalletScreen extends ConsumerWidget {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  final scope = MainScaffoldScope.maybeOf(context);
+                  if (scope != null) {
+                    scope.setIndex(0);
+                    return;
+                  }
+                  Navigator.maybePop(context);
+                },
               ),
             ),
             body: const LoginRequiredView(
@@ -52,7 +74,14 @@ class WalletScreen extends ConsumerWidget {
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                final scope = MainScaffoldScope.maybeOf(context);
+                if (scope != null) {
+                  scope.setIndex(0);
+                  return;
+                }
+                Navigator.maybePop(context);
+              },
             ),
           ),
           body: walletData.when(
@@ -73,7 +102,14 @@ class WalletScreen extends ConsumerWidget {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              final scope = MainScaffoldScope.maybeOf(context);
+              if (scope != null) {
+                scope.setIndex(0);
+                return;
+              }
+              Navigator.maybePop(context);
+            },
           ),
         ),
         body: const Center(
@@ -89,7 +125,14 @@ class WalletScreen extends ConsumerWidget {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              final scope = MainScaffoldScope.maybeOf(context);
+              if (scope != null) {
+                scope.setIndex(0);
+                return;
+              }
+              Navigator.maybePop(context);
+            },
           ),
         ),
         body: const LoginRequiredView(
@@ -100,18 +143,27 @@ class WalletScreen extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context, WidgetRef ref, WalletData data) {
+    final withdrawals = data.recentWithdrawals;
+    final hasWithdrawals = withdrawals.isNotEmpty;
+    final preCount = hasWithdrawals ? 9 : 6;
+    final tailStart = preCount + withdrawals.length;
+    final totalCount = tailStart + 3;
+
     return RefreshIndicator(
       color: AppTheme.cashbackOrange,
       onRefresh: () async => ref.invalidate(walletDataProvider),
-      child: SingleChildScrollView(
+      child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
+        cacheExtent: 300,
+        addAutomaticKeepAlives: false,
+        addRepaintBoundaries: true,
+        itemCount: totalCount,
+        itemBuilder: (context, index) {
+          if (index == 0) return const SizedBox(height: 16);
 
-            // Top Card - WALLET SUMMARY
-            Container(
+          // Top Card - WALLET SUMMARY
+          if (index == 1) {
+            return Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -119,7 +171,7 @@ class WalletScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withAlpha(13),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
@@ -224,32 +276,32 @@ class WalletScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-            ),
+            );
+          }
 
-            const SizedBox(height: 24),
+          if (index == 2) return const SizedBox(height: 24);
 
-            // My order Details button
-            _ActionButton(
+          if (index == 3) {
+            return _ActionButton(
               title: 'My order Details',
-              onTap: () {
-                // TODO: Navigate to order details
-              },
-            ),
+              onTap: () => _openComingSoon(context, 'My order Details'),
+            );
+          }
 
-            const SizedBox(height: 12),
+          if (index == 4) return const SizedBox(height: 12);
 
-            // Get Help button
-            _ActionButton(
+          if (index == 5) {
+            return _ActionButton(
               title: 'Get Help',
-              onTap: () {
-                // TODO: Navigate to help
-              },
-            ),
+              onTap: () => _openComingSoon(context, 'Get Help'),
+            );
+          }
 
-            if (data.recentWithdrawals.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+          if (hasWithdrawals) {
+            if (index == 6) return const SizedBox(height: 24);
+            if (index == 7) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   'Recent Withdrawals',
                   style: TextStyle(
@@ -258,17 +310,20 @@ class WalletScreen extends ConsumerWidget {
                     color: AppTheme.textPrimary,
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              ...data.recentWithdrawals.map(
-                (item) => _WithdrawalTile(item: item),
-              ),
-            ],
+              );
+            }
+            if (index == 8) return const SizedBox(height: 8);
 
-            const SizedBox(height: 24),
+            final firstWithdrawalIndex = 9;
+            if (index >= firstWithdrawalIndex && index < firstWithdrawalIndex + withdrawals.length) {
+              return _WithdrawalTile(item: withdrawals[index - firstWithdrawalIndex]);
+            }
+          }
 
-            // Request Payment CTA
-            Padding(
+          if (index == tailStart) return const SizedBox(height: 24);
+
+          if (index == tailStart + 1) {
+            return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
                 width: double.infinity,
@@ -300,11 +355,13 @@ class WalletScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-            ),
+            );
+          }
 
-            const SizedBox(height: 32),
-          ],
-        ),
+          if (index == tailStart + 2) return const SizedBox(height: 32);
+
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
@@ -366,7 +423,8 @@ class WalletScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: method,
+                  key: ValueKey(method),
+                  initialValue: method,
                   items: const [
                     DropdownMenuItem(value: 'upi', child: Text('UPI')),
                     DropdownMenuItem(value: 'bank', child: Text('Bank')),
@@ -517,7 +575,7 @@ class _ActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withAlpha(13),
                 blurRadius: 5,
                 offset: const Offset(0, 2),
               ),
@@ -559,7 +617,7 @@ class _WithdrawalTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withAlpha(13),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),

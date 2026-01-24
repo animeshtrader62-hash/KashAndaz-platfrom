@@ -30,7 +30,7 @@ class _AnimatedButtonState extends State<AnimatedButton> {
       child: AnimatedScale(
         scale: _isPressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 120),
-        curve: Curves.easeInOut,
+        curve: Curves.easeOut,
         child: widget.child,
       ),
     );

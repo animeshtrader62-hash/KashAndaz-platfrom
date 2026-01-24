@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/providers.dart';
 import '../models/wallet_models.dart';
@@ -10,7 +11,9 @@ final walletServiceProvider = Provider<WalletService>((ref) {
 });
 
 /// Provider for wallet data
-final walletDataProvider = FutureProvider<WalletData>((ref) async {
+final walletDataProvider = FutureProvider.autoDispose<WalletData>((ref) async {
   final service = ref.watch(walletServiceProvider);
-  return service.getWallet();
+  final cancelToken = CancelToken();
+  ref.onDispose(cancelToken.cancel);
+  return service.getWallet(cancelToken: cancelToken);
 });

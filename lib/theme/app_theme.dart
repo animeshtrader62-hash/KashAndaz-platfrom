@@ -12,9 +12,21 @@ class AppTheme {
   
   /// SECONDARY: Cashback Orange - ONLY for cashback amounts, CTAs, offer badges
   static const Color cashbackOrange = Color(0xFFFF9F00);
+
+  /// Cashback Green - confirmed/positive amounts and highlights
+  static const Color cashbackGreen = Color(0xFF1FA463);
   
   /// Light orange for backgrounds and subtle highlights
   static const Color primaryOrangeLight = Color(0xFFFFF1E6);
+
+  // Accent colors (Home UI chips, category tiles)
+  static const Color accentYellow = Color(0xFFFFE7B3);
+  static const Color accentPink = Color(0xFFFFE1EC);
+  static const Color accentPurple = Color(0xFFE6E1FF);
+  static const Color accentTeal = Color(0xFFE0F7F4);
+
+  /// Darker orange for gradients (used in hero cards)
+  static const Color primaryOrangeDark = Color(0xFFFF7A00);
   
   /// LEGACY: Keep for backward compatibility (use primaryBlue/cashbackOrange instead)
   static const Color primaryOrange = Color(0xFFFF9F00);
@@ -25,7 +37,7 @@ class AppTheme {
   // ═══════════════════════════════════════════════════════════════════════════
   
   /// Screen background: Light grey (Flipkart style)
-  static const Color scaffoldBg = Color(0xFFF1F3F6);
+  static const Color scaffoldBg = Color(0xFFF5F7FA);
   
   /// Card backgrounds: Pure white
   static const Color cardWhite = Color(0xFFFFFFFF);
@@ -58,6 +70,9 @@ class AppTheme {
   
   // Border & Dividers
   static const Color borderLight = Color(0xFFE5E7EB);
+
+  /// Divider (UI spec)
+  static const Color divider = Color(0xFFE0E0E0);
   
   // Border Radius (16 default, 20 large)
   static const double defaultRadius = 16.0;
@@ -87,7 +102,7 @@ class AppTheme {
   // Shadows (soft, opacity < 0.08 for cards)
   static List<BoxShadow> get cardShadow => [
     BoxShadow(
-      color: Colors.black.withOpacity(0.06),
+      color: Colors.black.withAlpha(15),
       blurRadius: 12,
       offset: const Offset(0, 4),
       spreadRadius: 0,
@@ -96,7 +111,7 @@ class AppTheme {
   
   static List<BoxShadow> get heroShadow => [
     BoxShadow(
-      color: primaryOrange.withOpacity(0.25),
+      color: primaryOrange.withAlpha(64),
       blurRadius: 20,
       offset: const Offset(0, 8),
     ),

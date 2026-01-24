@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../core/api/api_client.dart';
 import '../../../core/utils/constants.dart';
 import '../models/transaction_models.dart';
@@ -13,6 +15,7 @@ class TransactionService {
     String? status,
     int? page,
     int? limit,
+    CancelToken? cancelToken,
   }) async {
     final response = await _apiClient.get(
       ApiConstants.transactions,
@@ -21,6 +24,7 @@ class TransactionService {
         if (page != null) 'page': page,
         if (limit != null) 'limit': limit,
       },
+      cancelToken: cancelToken,
     );
 
     final transactions = (response.data['transactions'] as List)
@@ -31,9 +35,10 @@ class TransactionService {
   }
 
   /// Get transaction detail
-  Future<TransactionDetail> getTransactionDetail(String transactionId) async {
+  Future<TransactionDetail> getTransactionDetail(String transactionId, {CancelToken? cancelToken}) async {
     final response = await _apiClient.get(
       '${ApiConstants.transactions}/$transactionId',
+      cancelToken: cancelToken,
     );
 
     return TransactionDetail.fromJson(response.data);

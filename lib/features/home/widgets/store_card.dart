@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
+import '../../../core/widgets/store_logo.dart';
 import '../../../theme/app_theme.dart';
 
 class StoreCard extends StatelessWidget {
@@ -38,33 +39,12 @@ class StoreCard extends StatelessWidget {
             child: Row(
               children: [
                 // Store Logo
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: AppTheme.scaffoldBg,
-                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppTheme.smallRadius),
-                    child: CachedNetworkImage(
-                      imageUrl: logoUrl,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => const Center(
-                        child: Icon(
-                          Icons.store,
-                          color: AppTheme.textLight,
-                          size: 32,
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => const Center(
-                        child: Icon(
-                          Icons.store,
-                          color: AppTheme.textLight,
-                          size: 32,
-                        ),
-                      ),
-                    ),
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: StoreLogo(
+                    url: logoUrl,
+                    storeName: storeName,
                   ),
                 ),
                 

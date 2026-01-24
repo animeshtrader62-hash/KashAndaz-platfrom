@@ -4,6 +4,7 @@ import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../core/theme/spacing.dart';
 import '../../../core/utils/validators.dart';
+import '../../../theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 
@@ -50,16 +51,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           );
       
       if (mounted) {
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Account created successfully. You are now logged in.'),
+            duration: Duration(seconds: 2),
+            backgroundColor: AppColors.success,
+          ),
+        );
         if (widget.popOnSuccess) {
           Navigator.pop(context, true);
           return;
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
       }
     } catch (e) {
       if (mounted) {
@@ -80,6 +84,22 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppTheme.primaryBlue,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+              return;
+            }
+            Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+          },
+        ),
+        title: const Text('Sign Up'),
+      ),
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
@@ -208,11 +228,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _handleSignup,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.textOnPrimary,
+                        backgroundColor: AppTheme.primaryBlue,
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(Spacing.buttonRadius),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        elevation: 0,
                       ),
                       child: _isLoading
                           ? const SizedBox(
@@ -221,14 +242,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.textOnPrimary,
+                                  Colors.white,
                                 ),
                               ),
                             )
                           : Text(
                               'Sign Up',
                               style: AppTypography.labelLarge.copyWith(
-                                color: AppColors.textOnPrimary,
+                                color: Colors.white,
                               ),
                             ),
                     ),

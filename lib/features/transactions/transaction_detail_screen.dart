@@ -101,7 +101,7 @@ class TransactionDetailScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppTheme.spacingMedium),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
+              color: statusColor.withAlpha(26),
               shape: BoxShape.circle,
             ),
             child: Icon(

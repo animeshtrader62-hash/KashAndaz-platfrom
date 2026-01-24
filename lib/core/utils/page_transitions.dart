@@ -1,49 +1,51 @@
 import 'package:flutter/material.dart';
 
-/// Custom page route with slide transition
-class SlidePageRoute extends PageRouteBuilder {
+/// Custom page route with subtle fade+slide transition.
+class SlidePageRoute<T> extends PageRouteBuilder<T> {
   final Widget page;
   
   SlidePageRoute({required this.page})
       : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOutCubic;
+            final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+            final position = Tween<Offset>(
+              begin: const Offset(0.08, 0.0),
+              end: Offset.zero,
+            ).animate(curved);
+            final opacity = Tween<double>(begin: 0.0, end: 1.0).animate(curved);
 
-            var tween = Tween(begin: begin, end: end).chain(
-              CurveTween(curve: curve),
-            );
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
+            return FadeTransition(
+              opacity: opacity,
+              child: SlideTransition(
+                position: position,
+                child: child,
+              ),
             );
           },
-          transitionDuration: const Duration(milliseconds: 300),
+          transitionDuration: const Duration(milliseconds: 120),
+          reverseTransitionDuration: const Duration(milliseconds: 120),
         );
 }
 
 /// Custom page route with fade transition
-class FadePageRoute extends PageRouteBuilder {
+class FadePageRoute<T> extends PageRouteBuilder<T> {
   final Widget page;
   
   FadePageRoute({required this.page})
       : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+            final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+            return FadeTransition(opacity: curved, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 250),
+          transitionDuration: const Duration(milliseconds: 120),
+          reverseTransitionDuration: const Duration(milliseconds: 120),
         );
 }
 
 /// Custom page route with scale transition
-class ScalePageRoute extends PageRouteBuilder {
+class ScalePageRoute<T> extends PageRouteBuilder<T> {
   final Widget page;
   
   ScalePageRoute({required this.page})

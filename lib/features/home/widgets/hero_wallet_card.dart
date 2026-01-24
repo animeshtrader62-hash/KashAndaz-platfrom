@@ -97,7 +97,7 @@ class HeroWalletCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withAlpha(26),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -128,7 +128,7 @@ class HeroWalletCard extends StatelessWidget {
           horizontal: AppTheme.spacingSmall,
         ),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withAlpha(51),
           borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
         ),
         child: Column(
@@ -186,7 +186,7 @@ class _AnimatedButtonState extends State<_AnimatedButton> {
       child: AnimatedScale(
         scale: _isPressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 120),
-        curve: Curves.easeInOut,
+        curve: Curves.easeOut,
         child: widget.child,
       ),
     );

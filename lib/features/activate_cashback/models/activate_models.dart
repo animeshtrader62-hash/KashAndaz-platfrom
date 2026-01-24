@@ -15,13 +15,15 @@ class ActivateCashbackResponse {
   });
 
   factory ActivateCashbackResponse.fromJson(Map<String, dynamic> json) {
+    final deepLinkValue =
+        (json['affiliate_redirect_url'] ?? json['deep_link'] ?? '').toString();
     return ActivateCashbackResponse(
-      deepLink: json['deep_link'] as String,
-      clickId: json['click_id'] as String,
-      storeName: json['store_name'] as String,
-      message: json['message'] as String,
+      deepLink: deepLinkValue,
+      clickId: (json['click_id'] ?? '').toString(),
+      storeName: (json['store_name'] ?? '').toString(),
+      message: (json['message'] ?? '').toString(),
       expiresAt: json['expires_at'] != null
-          ? DateTime.parse(json['expires_at'] as String)
+          ? DateTime.tryParse(json['expires_at'].toString())
           : null,
     );
   }

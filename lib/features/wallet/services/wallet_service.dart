@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../core/api/api_client.dart';
 import '../../../core/utils/constants.dart';
 import '../models/wallet_models.dart';
@@ -9,8 +11,8 @@ class WalletService {
   WalletService(this._apiClient);
 
   /// Get wallet data
-  Future<WalletData> getWallet() async {
-    final response = await _apiClient.get(ApiConstants.wallet);
+  Future<WalletData> getWallet({CancelToken? cancelToken}) async {
+    final response = await _apiClient.get(ApiConstants.wallet, cancelToken: cancelToken);
     return WalletData.fromJson(response.data as Map<String, dynamic>);
   }
 

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
+import '../../core/navigation/main_scaffold.dart';
 import '../../core/widgets/login_required.dart';
 import '../auth/providers/auth_provider.dart';
+import 'missing_cashback_form.dart';
+import 'missing_cashback_list.dart';
 
 /// Missing Cashback Screen - EXACT STRUCTURE FROM HAND-DRAWN UI
 /// 
@@ -18,11 +21,16 @@ class MissingCashbackScreen extends ConsumerStatefulWidget {
   ConsumerState<MissingCashbackScreen> createState() => _MissingCashbackScreenState();
 }
 
-class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
+class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen>
+    with AutomaticKeepAliveClientMixin {
   String _selectedFilter = 'In Review';
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     final authState = ref.watch(authProvider);
 
     return authState.when(
@@ -37,7 +45,14 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  final scope = MainScaffoldScope.maybeOf(context);
+                  if (scope != null) {
+                    scope.setIndex(0);
+                    return;
+                  }
+                  Navigator.pop(context);
+                },
               ),
             ),
             body: const LoginRequiredView(
@@ -55,7 +70,14 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                final scope = MainScaffoldScope.maybeOf(context);
+                if (scope != null) {
+                  scope.setIndex(0);
+                  return;
+                }
+                Navigator.pop(context);
+              },
             ),
           ),
           body: Column(
@@ -83,7 +105,7 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
                   label: 'Successfully',
                   isSelected: _selectedFilter == 'Successfully',
                   color: AppTheme.successGreen,
-                  onTap: () => setState(() => _selectedFilter == 'Successfully'),
+                  onTap: () => setState(() => _selectedFilter = 'Successfully'),
                 ),
               ],
             ),
@@ -91,36 +113,9 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
           
           const SizedBox(height: 24),
           
-          // Content area (empty state for now)
+          // Content area (real list)
           Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.receipt_long_outlined,
-                    size: 64,
-                    color: AppTheme.textLight,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No missing cashback claims',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'All your cashback is tracked',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.textLight,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: MissingCashbackList(filter: _selectedFilter),
           ),
           
           // Bottom CTA
@@ -130,8 +125,7 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Navigate to track cashback
-                  _showTrackCashbackDialog(context);
+                  _openSubmitSheet(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -173,7 +167,14 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              final scope = MainScaffoldScope.maybeOf(context);
+              if (scope != null) {
+                scope.setIndex(0);
+                return;
+              }
+              Navigator.pop(context);
+            },
           ),
         ),
         body: const Center(
@@ -189,7 +190,14 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              final scope = MainScaffoldScope.maybeOf(context);
+              if (scope != null) {
+                scope.setIndex(0);
+                return;
+              }
+              Navigator.pop(context);
+            },
           ),
         ),
         body: const LoginRequiredView(
@@ -199,18 +207,18 @@ class _MissingCashbackScreenState extends ConsumerState<MissingCashbackScreen> {
     );
   }
 
-  void _showTrackCashbackDialog(BuildContext context) {
-    showDialog(
+  void _openSubmitSheet(BuildContext context) {
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Track Cashback'),
-        content: const Text('Cashback tracking feature coming soon!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: AppTheme.scaffoldBg,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => MissingCashbackForm(
+        onSubmitted: () {
+          // List refresh is handled via provider invalidation in the form.
+        },
       ),
     );
   }
@@ -241,7 +249,7 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? chipColor.withOpacity(0.1) : Colors.white,
+          color: isSelected ? chipColor.withAlpha(26) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? chipColor : AppTheme.borderLight,

@@ -35,18 +35,24 @@ class WalletSummary {
 class Store {
   final String id;
   final String name;
+  final String? storeSlug;
   final String logoUrl;
   final String cashbackRate;
   final String cashbackType; // 'percentage' or 'flat'
+  final int? popularityScore;
+  final String? description;
   final bool isActive;
   final String? category;
 
   Store({
     required this.id,
     required this.name,
+    this.storeSlug,
     required this.logoUrl,
     required this.cashbackRate,
     required this.cashbackType,
+    this.popularityScore,
+    this.description,
     required this.isActive,
     this.category,
   });
@@ -55,9 +61,14 @@ class Store {
     return Store(
       id: json['id'] as String,
       name: json['name'] as String,
-      logoUrl: json['logo_url'] as String,
+      storeSlug: json['store_slug']?.toString(),
+      logoUrl: (json['store_logo_url'] ?? json['logo_url'] ?? '').toString(),
       cashbackRate: json['cashback_rate'] as String,
       cashbackType: json['cashback_type'] as String,
+      popularityScore: json['popularity_score'] is num
+          ? (json['popularity_score'] as num).toInt()
+          : int.tryParse((json['popularity_score'] ?? '').toString()),
+      description: (json['store_description'] ?? json['description'])?.toString(),
       isActive: json['is_active'] as bool? ?? true,
       category: json['category'] as String?,
     );
@@ -67,9 +78,13 @@ class Store {
     return {
       'id': id,
       'name': name,
+      'store_slug': storeSlug,
       'logo_url': logoUrl,
+      'store_logo_url': logoUrl,
       'cashback_rate': cashbackRate,
       'cashback_type': cashbackType,
+      'popularity_score': popularityScore,
+      'store_description': description,
       'is_active': isActive,
       'category': category,
     };

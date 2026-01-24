@@ -53,7 +53,7 @@ class TrustSignals extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppTheme.primaryOrange.withOpacity(0.1),
+            color: AppTheme.primaryOrange.withAlpha(26),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

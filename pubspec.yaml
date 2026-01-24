@@ -60,6 +60,9 @@ dependencies:
   intl: ^0.20.1
   logger: ^2.5.0
 
+  # File Upload (screenshot)
+  file_picker: ^8.1.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

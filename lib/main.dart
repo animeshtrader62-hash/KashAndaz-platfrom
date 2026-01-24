@@ -4,11 +4,8 @@ import 'theme/app_theme.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/signup_screen.dart';
-import 'features/home/home_screen.dart';
 import 'features/transactions/transactions_screen.dart';
-import 'features/wallet/wallet_screen.dart';
-import 'features/profile/profile_screen.dart';
-import 'features/missing_cashback/missing_cashback_screen.dart';
+import 'core/navigation/main_scaffold.dart';
 
 void main() {
   runApp(
@@ -30,11 +27,13 @@ class MyApp extends ConsumerWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
-        '/home': (context) => const HomeScreen(),
+        // Bottom-tab destinations map to MainScaffold to keep the bottom nav persistent.
+        '/home': (context) => const MainScaffold(initialIndex: 0),
+        '/stores': (context) => const MainScaffold(initialIndex: 1),
+        '/wallet': (context) => const MainScaffold(initialIndex: 2),
+        '/missing_cashback': (context) => const MainScaffold(initialIndex: 3),
+        '/profile': (context) => const MainScaffold(initialIndex: 4),
         '/transactions': (context) => const TransactionsScreen(),
-        '/wallet': (context) => const WalletScreen(),
-        '/profile': (context) => const ProfileScreen(),
-        '/missing_cashback': (context) => const MissingCashbackScreen(),
       },
       home: const AuthGate(),
     );
@@ -50,11 +49,9 @@ class AuthGate extends ConsumerWidget {
     final authState = ref.watch(authProvider);
 
     return authState.when(
-      data: (user) {
-        return const HomeScreen();
-      },
-      loading: () => const HomeScreen(),
-      error: (err, stack) => const HomeScreen(),
+      data: (_) => const MainScaffold(),
+      loading: () => const MainScaffold(),
+      error: (err, stack) => const MainScaffold(),
     );
   }
 }

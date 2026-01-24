@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
+import 'dart:async';
 import '../storage/secure_storage.dart';
 import '../utils/constants.dart';
 
@@ -21,8 +22,10 @@ class ApiInterceptor extends Interceptor {
       options.headers[ApiConstants.headerAuthorization] = 'Bearer $token';
     }
 
-    // Add content type
-    options.headers[ApiConstants.headerContentType] = ApiConstants.contentTypeJson;
+    // Add content type (don't override multipart/form-data)
+    if (options.data is! FormData) {
+      options.headers[ApiConstants.headerContentType] = ApiConstants.contentTypeJson;
+    }
 
     // Log request
     _logger.d('REQUEST[${options.method}] => PATH: ${options.path}');
@@ -51,6 +54,12 @@ class ApiInterceptor extends Interceptor {
     _logger.e('Message: ${err.message}');
     if (err.response?.data != null) {
       _logger.e('Error Data: ${err.response?.data}');
+    }
+
+    // Treat 401 as unauthenticated (not a network problem). Clear stale tokens so
+    // guest-access endpoints don't keep failing due to an invalid token.
+    if (err.response?.statusCode == 401) {
+      unawaited(_storage.clearAll());
     }
 
     return handler.next(err);

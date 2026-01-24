@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../theme/app_theme.dart';
+import '../../../core/widgets/store_logo.dart';
 import '../../transactions/models/transaction_models.dart';
 
 class CashbackTransactionCard extends StatelessWidget {
@@ -38,19 +39,10 @@ class CashbackTransactionCard extends StatelessWidget {
             padding: const EdgeInsets.all(AppTheme.spacingMedium),
             child: Row(
               children: [
-                // Store Icon
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: _getStatusColor().withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _getStatusIcon(),
-                    color: _getStatusColor(),
-                    size: 24,
-                  ),
+                // Store Logo (real brand logo)
+                StoreLogo(
+                  url: transaction.storeLogo,
+                  storeName: storeName,
                 ),
                 
                 const SizedBox(width: AppTheme.spacingMedium),
@@ -101,7 +93,7 @@ class CashbackTransactionCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: _getStatusColor().withOpacity(0.1),
+                        color: _getStatusColor().withAlpha(26),
                         borderRadius: BorderRadius.circular(AppTheme.radiusPill),
                       ),
                       child: Text(
@@ -133,19 +125,6 @@ class CashbackTransactionCard extends StatelessWidget {
         return AppTheme.errorRed;
       case TransactionStatus.paid:
         return AppTheme.trustBlue;
-    }
-  }
-
-  IconData _getStatusIcon() {
-    switch (status) {
-      case TransactionStatus.pending:
-        return Icons.access_time_rounded;
-      case TransactionStatus.confirmed:
-        return Icons.check_circle_rounded;
-      case TransactionStatus.cancelled:
-        return Icons.cancel_rounded;
-      case TransactionStatus.paid:
-        return Icons.account_balance_wallet_rounded;
     }
   }
 

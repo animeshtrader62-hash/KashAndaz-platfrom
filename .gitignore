@@ -38,6 +38,10 @@ migrate_working_dir/
 # Backend secrets
 backend/.env
 
+# Local git worktrees / backend copies (do not commit)
+backend-worktree/
+backend/
+
 # Sensitive keys
 Documents/*.pem
 
