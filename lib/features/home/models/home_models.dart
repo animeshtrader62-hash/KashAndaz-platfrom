@@ -13,15 +13,15 @@ class WalletSummary {
   });
 
   factory WalletSummary.fromJson(Map<String, dynamic> json) {
-    double _num(dynamic v) {
+    double numValue(dynamic v) {
       if (v is num) return v.toDouble();
       return double.tryParse(v?.toString() ?? '') ?? 0.0;
     }
 
     return WalletSummary(
-      totalEarned: _num(json['total_earned']),
-      pending: _num(json['pending']),
-      available: _num(json['available']),
+      totalEarned: numValue(json['total_earned']),
+      pending: numValue(json['pending']),
+      available: numValue(json['available']),
       currency: json['currency'] as String? ?? 'INR',
     );
   }

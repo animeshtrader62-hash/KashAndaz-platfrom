@@ -34,6 +34,17 @@ class ApiServerException implements Exception {
   String toString() => message;
 }
 
+/// Represents a handled HTTP error where the backend returned a message (typically 4xx).
+class ApiHttpException implements Exception {
+  final int? statusCode;
+  final String message;
+
+  ApiHttpException(this.message, {this.statusCode});
+
+  @override
+  String toString() => message;
+}
+
 class ApiCancelledException implements Exception {
   final String message;
 

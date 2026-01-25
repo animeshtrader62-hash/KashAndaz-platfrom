@@ -690,8 +690,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AutomaticKeepAlive
       ? 'Please check your internet connection and try again'
       : isTimeout
         ? 'The server took too long to respond. Please try again.'
-        : isServer
-          ? (err as ApiServerException).message
+        : (err is ApiServerException)
+          ? err.message
           : isUnauth
             ? 'You can still browse stores as a guest.'
             : err.toString();

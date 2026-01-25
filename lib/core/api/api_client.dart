@@ -13,12 +13,11 @@ class ApiClient {
   ApiClient(this._storage) {
     if (kDebugMode) {
       // ignore: avoid_print
-      print('[ApiClient] baseUrl=${ApiConstants.baseUrl}');
+      print('[ApiClient] baseUrl=$API_BASE_URL');
     }
 
     _dio = Dio(
       BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
         connectTimeout: ApiConstants.connectTimeout,
         receiveTimeout: ApiConstants.receiveTimeout,
         sendTimeout: ApiConstants.sendTimeout,
@@ -32,6 +31,21 @@ class ApiClient {
     _dio.interceptors.add(ApiInterceptor(_storage));
   }
 
+  String _resolveUrl(String path) {
+    final trimmed = path.trim();
+    if (trimmed.startsWith('http://')) {
+      throw StateError('HTTP is not allowed. Use HTTPS only.');
+    }
+    if (trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    if (!trimmed.startsWith('/')) {
+      // Keep behavior explicit to avoid accidental relative URLs.
+      return '$API_BASE_URL/$trimmed';
+    }
+    return '$API_BASE_URL$trimmed';
+  }
+
   /// GET request
   Future<Response> get(
     String path, {
@@ -41,7 +55,7 @@ class ApiClient {
   }) async {
     try {
       return await _dio.get(
-        path,
+        _resolveUrl(path),
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
@@ -61,7 +75,7 @@ class ApiClient {
   }) async {
     try {
       return await _dio.post(
-        path,
+        _resolveUrl(path),
         data: data,
         queryParameters: queryParameters,
         options: options,
@@ -82,7 +96,7 @@ class ApiClient {
   }) async {
     try {
       return await _dio.put(
-        path,
+        _resolveUrl(path),
         data: data,
         queryParameters: queryParameters,
         options: options,
@@ -103,7 +117,7 @@ class ApiClient {
   }) async {
     try {
       return await _dio.delete(
-        path,
+        _resolveUrl(path),
         data: data,
         queryParameters: queryParameters,
         options: options,
@@ -129,15 +143,22 @@ class ApiClient {
         return ApiCancelledException('Request cancelled');
       
       case DioExceptionType.connectionError:
-        return ApiNetworkException('No internet connection');
+        return ApiNetworkException('No Internet connection');
       
       default:
         final msg = (error.message ?? '').toLowerCase();
-        if (msg.contains('handshake') || msg.contains('certificate')) {
-          return ApiServerException('Server temporarily unavailable. Please try again later.');
+        // TLS / DNS / routing failures must be treated as connectivity problems.
+        if (msg.contains('handshake') ||
+            msg.contains('certificate') ||
+            msg.contains('tls') ||
+            msg.contains('ssl')) {
+          return ApiNetworkException('No Internet connection');
         }
-        if (msg.contains('failed host lookup') || msg.contains('network is unreachable')) {
-          return ApiNetworkException('No internet connection');
+        if (msg.contains('failed host lookup') ||
+            msg.contains('network is unreachable') ||
+            msg.contains('connection refused') ||
+            msg.contains('no address associated with hostname')) {
+          return ApiNetworkException('No Internet connection');
         }
         return Exception('Something went wrong. Please try again.');
     }
@@ -180,20 +201,23 @@ class ApiClient {
 
     switch (statusCode) {
       case 400:
-        return Exception(message);
+        return ApiHttpException(message, statusCode: statusCode);
       case 401:
         return ApiUnauthenticatedException(message.isNotEmpty ? message : 'Unauthorized');
       case 403:
-        return Exception('Access forbidden');
+        return ApiHttpException(message.isNotEmpty ? message : 'Access forbidden', statusCode: statusCode);
       case 404:
-        return Exception('Resource not found');
+        return ApiHttpException(message.isNotEmpty ? message : 'Resource not found', statusCode: statusCode);
       case 422:
-        return Exception(message);
+        return ApiHttpException(message, statusCode: statusCode);
       case 500:
         return ApiServerException('Server error. Please try again later.');
       default:
         if (statusCode != null && statusCode >= 500) {
           return ApiServerException('Server temporarily unavailable. Please try again later.');
+        }
+        if (statusCode != null && statusCode >= 400 && statusCode < 500) {
+          return ApiHttpException(message, statusCode: statusCode);
         }
         return Exception(message);
     }

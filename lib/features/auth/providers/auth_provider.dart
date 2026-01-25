@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import '../../../core/api/providers.dart';
-import '../../../core/utils/constants.dart';
 import '../models/auth_models.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';

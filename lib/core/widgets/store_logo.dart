@@ -121,7 +121,7 @@ class StoreLogo extends StatelessWidget {
     if (!kIsWeb) return resolvedUrl;
 
     final encoded = Uri.encodeQueryComponent(resolvedUrl);
-    return '${ApiConstants.baseUrl}/api/assets/image?url=$encoded';
+      return '$API_BASE_URL/api/assets/image?url=$encoded';
   }
 
   @override

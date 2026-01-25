@@ -1,29 +1,12 @@
-import 'package:flutter/foundation.dart';
+// ignore_for_file: constant_identifier_names
+
+/// Production API base URL (HTTPS only).
+///
+/// Do not change to HTTP, IP, or local ports. The Android build enforces HTTPS-only.
+const String API_BASE_URL = 'https://api.kashandaz.com';
 
 /// API Constants and Configuration
 class ApiConstants {
-  static const String _baseUrlOverride = String.fromEnvironment('API_BASE_URL');
-
-  // Production default. If you don't pass --dart-define=API_BASE_URL=...,
-  // the app will use this.
-  static const String _defaultBaseUrl = 'https://api.kashandaz.com';
-
-  /// Backend base URL.
-  static String get baseUrl {
-    final raw = (_baseUrlOverride.isNotEmpty ? _baseUrlOverride : _defaultBaseUrl).trim();
-    final normalized = raw.replaceAll(RegExp(r'/+$'), '');
-
-    final uri = Uri.tryParse(normalized);
-    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
-      throw StateError('Invalid API_BASE_URL: "$raw"');
-    }
-    if (uri.scheme != 'https') {
-      throw StateError('API_BASE_URL must use HTTPS (got: ${uri.scheme})');
-    }
-
-    return normalized;
-  }
-
   // API Endpoints
   static const String authRegister = '/api/auth/register';
   static const String authLogin = '/api/auth/login';
