@@ -10,6 +10,9 @@ from .routes.claims import router as claims_router
 from .routes.admin_claims import router as admin_claims_router
 from .routes.admin import router as admin_router
 from .routes.admin_stores import router as admin_stores_router
+from .routes.admin_dashboard import router as admin_dashboard_router
+from .routes.admin_users import router as admin_users_router
+from .routes.admin_orders import router as admin_orders_router
 from .routes.home import router as home_router
 from .routes.wallet import router as wallet_router
 from .routes.transactions import router as transactions_router
@@ -29,6 +32,9 @@ api_router.include_router(claims_router)
 api_router.include_router(admin_claims_router)
 api_router.include_router(admin_router)
 api_router.include_router(admin_stores_router)
+api_router.include_router(admin_dashboard_router)
+api_router.include_router(admin_users_router)
+api_router.include_router(admin_orders_router)
 api_router.include_router(home_router)
 api_router.include_router(wallet_router)
 api_router.include_router(transactions_router)
