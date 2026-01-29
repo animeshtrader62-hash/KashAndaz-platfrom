@@ -14,6 +14,13 @@ def withdraw(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
+    # Phase 2 scope: read-only integration only.
+    # No payouts/withdrawals and no wallet mutations are allowed yet.
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Withdrawals are not enabled yet",
+    )
+
     if payload.method == "upi" and not payload.upi_id:
         raise HTTPException(status_code=400, detail="UPI ID is required")
     if payload.method == "bank" and not payload.bank_details:

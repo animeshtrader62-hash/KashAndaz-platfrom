@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.auth import require_admin
 from app.db.deps import get_db
@@ -14,6 +14,12 @@ def pay_withdrawal(
     db: Session = Depends(get_db),
     _=Depends(require_admin),
 ):
+    # Phase 1/2 scope: payouts are not enabled.
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Payouts are not enabled yet",
+    )
+
     withdrawal = db.query(Withdrawal).filter(Withdrawal.id == withdrawal_id).first()
     if not withdrawal:
         raise HTTPException(status_code=404, detail="Withdrawal not found")
