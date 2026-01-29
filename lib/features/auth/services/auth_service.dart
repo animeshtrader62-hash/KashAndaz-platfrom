@@ -3,6 +3,7 @@ import '../../../core/storage/secure_storage.dart';
 import '../../../core/utils/constants.dart';
 import '../models/auth_models.dart';
 import '../models/user_model.dart';
+import 'package:flutter/foundation.dart';
 
 /// Authentication service for login/signup/logout operations
 class AuthService {
@@ -18,6 +19,17 @@ class AuthService {
       data: request.toJson(),
     );
 
+    if (kDebugMode) {
+      final data = response.data;
+      if (data is Map) {
+        // ignore: avoid_print
+        print('[AuthService] login response keys=${data.keys.toList()}');
+      } else {
+        // ignore: avoid_print
+        print('[AuthService] login response type=${data.runtimeType}');
+      }
+    }
+
     final authResponse = AuthResponse.fromJson(response.data);
     
     // Save token and user data
@@ -27,6 +39,12 @@ class AuthService {
     }
     await _storage.saveUserId(authResponse.user.id);
     await _storage.saveUserEmail(authResponse.user.email);
+
+    if (kDebugMode) {
+      final saved = await _storage.getAuthToken();
+      // ignore: avoid_print
+      print('[AuthService] token_saved=${(saved != null && saved.isNotEmpty)} len=${saved?.length ?? 0}');
+    }
 
     return authResponse;
   }
@@ -38,6 +56,17 @@ class AuthService {
       data: request.toJson(),
     );
 
+    if (kDebugMode) {
+      final data = response.data;
+      if (data is Map) {
+        // ignore: avoid_print
+        print('[AuthService] signup response keys=${data.keys.toList()}');
+      } else {
+        // ignore: avoid_print
+        print('[AuthService] signup response type=${data.runtimeType}');
+      }
+    }
+
     final authResponse = AuthResponse.fromJson(response.data);
     
     // Save token and user data
@@ -47,6 +76,12 @@ class AuthService {
     }
     await _storage.saveUserId(authResponse.user.id);
     await _storage.saveUserEmail(authResponse.user.email);
+
+    if (kDebugMode) {
+      final saved = await _storage.getAuthToken();
+      // ignore: avoid_print
+      print('[AuthService] token_saved=${(saved != null && saved.isNotEmpty)} len=${saved?.length ?? 0}');
+    }
 
     return authResponse;
   }

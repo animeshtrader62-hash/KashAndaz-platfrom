@@ -13,10 +13,20 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    final tokenValue = (json['token'] ?? json['access_token'] ?? json['accessToken'])?.toString();
+    if (tokenValue == null || tokenValue.trim().isEmpty) {
+      throw const FormatException('Login response missing token');
+    }
+
+    final userJson = json['user'];
+    if (userJson is! Map<String, dynamic>) {
+      throw const FormatException('Login response missing user');
+    }
+
     return AuthResponse(
-      token: json['token'] as String,
+      token: tokenValue,
       refreshToken: (json['refresh_token'] ?? json['refreshToken']) as String?,
-      user: User.fromJson(json['user'] as Map<String, dynamic>),
+      user: User.fromJson(userJson),
     );
   }
 
