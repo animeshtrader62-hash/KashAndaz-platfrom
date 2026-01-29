@@ -8,14 +8,14 @@ from app.models import Transaction, Store
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
 
-@router.get("", response_model=TransactionsResponse)
-def list_transactions(
-    status: str | None = None,
-    page: int = 1,
-    limit: int = 20,
-    db: Session = Depends(get_db),
-    user=Depends(get_current_user),
-):
+def _list_user_transactions(
+    *,
+    db: Session,
+    user,
+    status: str | None,
+    page: int,
+    limit: int,
+) -> TransactionsResponse:
     query = db.query(Transaction).filter(Transaction.user_id == user.id)
     if status:
         query = query.filter(Transaction.status == status)
@@ -59,12 +59,12 @@ def list_transactions(
     )
 
 
-@router.get("/{transaction_id}", response_model=TransactionDetail)
-def transaction_detail(
+def _transaction_detail(
+    *,
     transaction_id: str,
-    db: Session = Depends(get_db),
-    user=Depends(get_current_user),
-):
+    db: Session,
+    user,
+) -> TransactionDetail:
     tx = (
         db.query(Transaction)
         .filter(Transaction.id == transaction_id, Transaction.user_id == user.id)
@@ -97,3 +97,23 @@ def transaction_detail(
         paid_at=tx.paid_at,
         cancelled_reason=tx.cancelled_reason,
     )
+
+
+@router.get("", response_model=TransactionsResponse)
+def list_transactions(
+    status: str | None = None,
+    page: int = 1,
+    limit: int = 20,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    return _list_user_transactions(db=db, user=user, status=status, page=page, limit=limit)
+
+
+@router.get("/{transaction_id}", response_model=TransactionDetail)
+def transaction_detail(
+    transaction_id: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    return _transaction_detail(transaction_id=transaction_id, db=db, user=user)
