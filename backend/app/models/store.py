@@ -14,6 +14,7 @@ class Store(Base):
     )
     name: Mapped[str] = mapped_column(String(160), nullable=False)
     logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    affiliate_base_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     cashback_rate: Mapped[str] = mapped_column(String(50), nullable=False)
     cashback_type: Mapped[str] = mapped_column(String(20), nullable=False)
     category: Mapped[str | None] = mapped_column(String(100), nullable=True)

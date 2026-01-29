@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 
 class TransactionOut(BaseModel):
@@ -34,6 +34,14 @@ class TransactionDetail(BaseModel):
 
 class TransactionsResponse(BaseModel):
     transactions: list[TransactionOut]
+    # Frontend-friendly alias. Keep internal naming as transactions.
+    orders: list[TransactionOut] | None = None
     pagination: dict
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="after")
+    def _sync_orders(self):
+        if self.orders is None:
+            self.orders = self.transactions
+        return self

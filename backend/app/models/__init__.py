@@ -7,6 +7,7 @@ from .withdrawal import Withdrawal
 from .claim import Claim
 from .risk_flag import RiskFlag
 from .missing_cashback_request import MissingCashbackRequest
+from .admin_log import AdminLog
 
 __all__ = [
     "User",
@@ -18,4 +19,5 @@ __all__ = [
     "Claim",
     "MissingCashbackRequest",
     "RiskFlag",
+    "AdminLog",
 ]

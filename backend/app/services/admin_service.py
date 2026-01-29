@@ -1,42 +1,29 @@
 from sqlalchemy.orm import Session
-from app.models import User, WalletLedger, RiskFlag
+from app.models import User, RiskFlag, AdminLog
 
 
-def block_user(db: Session, user: User) -> User:
+def log_admin_action(db: Session, admin_id: str, action: str) -> None:
+    db.add(AdminLog(admin_id=admin_id, action=action))
+
+
+def block_user(db: Session, user: User, admin_id: str | None = None) -> User:
     user.is_blocked = True
     db.add(user)
+    if admin_id:
+        log_admin_action(db, admin_id, f"user_block user_id={user.id}")
     db.commit()
     db.refresh(user)
     return user
 
 
-def unblock_user(db: Session, user: User) -> User:
+def unblock_user(db: Session, user: User, admin_id: str | None = None) -> User:
     user.is_blocked = False
     db.add(user)
+    if admin_id:
+        log_admin_action(db, admin_id, f"user_unblock user_id={user.id}")
     db.commit()
     db.refresh(user)
     return user
-
-
-def manual_ledger_entry(
-    db: Session,
-    user_id: str,
-    entry_type: str,
-    amount: float,
-    source_type: str,
-    source_id: str,
-) -> WalletLedger:
-    entry = WalletLedger(
-        user_id=user_id,
-        entry_type=entry_type,
-        amount=amount,
-        source_type=source_type,
-        source_id=source_id,
-    )
-    db.add(entry)
-    db.commit()
-    db.refresh(entry)
-    return entry
 
 
 def get_risk_flags(db: Session, user_id: str):
