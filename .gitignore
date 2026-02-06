@@ -23,7 +23,21 @@ migrate_working_dir/
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
-#.vscode/
+.vscode/
+
+# Python caches
+__pycache__/
+
+# Environment files
+.env
+**/.env
+
+# Node
+node_modules/
+**/node_modules/
+
+# Local tooling (not production code)
+tools/
 
 # Flutter/Dart/Pub related
 **/doc/api/
