@@ -7,6 +7,7 @@ from sqlalchemy import (
     Index,
     CheckConstraint,
     Numeric,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
@@ -16,6 +17,12 @@ class WalletLedger(Base):
     __tablename__ = "wallet_ledger"
     __table_args__ = (
         CheckConstraint("amount != 0", name="ck_wallet_amount_nonzero"),
+        UniqueConstraint(
+            "source_type",
+            "source_id",
+            "entry_type",
+            name="uq_wallet_ledger_source_entry",
+        ),
     )
 
     id: Mapped[str] = mapped_column(

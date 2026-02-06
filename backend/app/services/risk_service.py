@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+
 from app.models import RiskFlag, Withdrawal, Click, Transaction, User
 
 
@@ -29,27 +30,35 @@ def check_upi_reuse(db: Session, user: User, upi_id: str) -> None:
 
 
 def flag_clicks_without_sales(db: Session, click_threshold: int = 10) -> int:
-    subq = (
-        db.query(Click.user_id, func.count(Click.id).label("clicks"))
+    # Compute candidates in SQL to avoid N+1. Keep the run bounded to prevent
+    # long jobs on large datasets.
+    CANDIDATE_LIMIT = 500
+
+    clicks_subq = (
+        db.query(Click.user_id.label("user_id"), func.count(Click.id).label("clicks"))
         .group_by(Click.user_id)
         .subquery()
     )
-    users = (
-        db.query(User)
-        .join(subq, User.id == subq.c.user_id)
-        .filter(subq.c.clicks >= click_threshold)
+
+    tx_subq = (
+        db.query(Transaction.user_id.label("user_id"), func.count(Transaction.id).label("txs"))
+        .group_by(Transaction.user_id)
+        .subquery()
+    )
+
+    user_ids = (
+        db.query(clicks_subq.c.user_id)
+        .outerjoin(tx_subq, tx_subq.c.user_id == clicks_subq.c.user_id)
+        .filter(clicks_subq.c.clicks >= click_threshold)
+        .filter(func.coalesce(tx_subq.c.txs, 0) == 0)
+        .order_by(clicks_subq.c.clicks.desc())
+        .limit(CANDIDATE_LIMIT)
         .all()
     )
 
     flagged = 0
-    for user in users:
-        tx_count = (
-            db.query(func.count(Transaction.id))
-            .filter(Transaction.user_id == user.id)
-            .scalar()
-        )
-        if tx_count == 0:
-            create_flag(db, user.id, "clicks_no_sales", f"Clicks >= {click_threshold}")
-            flagged += 1
+    for (user_id,) in user_ids:
+        create_flag(db, user_id, "clicks_no_sales", f"Clicks >= {click_threshold}")
+        flagged += 1
 
     return flagged

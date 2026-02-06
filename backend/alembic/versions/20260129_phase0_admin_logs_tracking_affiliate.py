@@ -21,6 +21,7 @@ depends_on = None
 
 def upgrade() -> None:
     bind = op.get_bind()
+    now_default = sa.text("CURRENT_TIMESTAMP") if bind.dialect.name == "sqlite" else sa.text("now()")
     inspector = inspect(bind)
     tables = set(inspector.get_table_names())
 
@@ -31,7 +32,7 @@ def upgrade() -> None:
             sa.Column("id", sa.String(length=36), primary_key=True, nullable=False),
             sa.Column("admin_id", sa.String(length=36), sa.ForeignKey("users.id"), nullable=False),
             sa.Column("action", sa.String(length=255), nullable=False),
-            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()")),
+            sa.Column("created_at", sa.DateTime(timezone=True), server_default=now_default),
         )
 
     # Ensure indexes exist (safe for dev DBs where table pre-existed)

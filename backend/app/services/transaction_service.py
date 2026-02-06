@@ -26,6 +26,4 @@ def update_status(db: Session, tx: Transaction, target_status: str) -> Transacti
         tx.paid_at = now
 
     db.add(tx)
-    db.commit()
-    db.refresh(tx)
     return tx

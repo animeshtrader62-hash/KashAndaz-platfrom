@@ -37,17 +37,36 @@ def create_app() -> FastAPI:
         # Tests override the DB dependency and create schema separately.
         pass
 
-    scheduler = BackgroundScheduler()
+    # IMPORTANT: APScheduler's BackgroundScheduler runs in-process.
+    # In production, multi-worker setups (e.g. Uvicorn/Gunicorn workers) would
+    # start one scheduler per worker unless explicitly guarded.
+    scheduler_enabled = os.getenv("ENABLE_SCHEDULER", "0") == "1"
+    scheduler = BackgroundScheduler() if scheduler_enabled else None
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
-        scheduler.add_job(run_confirmation_job, "interval", hours=24, id="confirm_job")
-        scheduler.add_job(run_risk_job, "interval", hours=24, id="risk_job")
-        scheduler.start()
+        if scheduler is not None:
+            logger.info("scheduler_starting")
+            scheduler.add_job(
+                run_confirmation_job,
+                "interval",
+                hours=24,
+                id="confirm_job",
+                replace_existing=True,
+            )
+            scheduler.add_job(
+                run_risk_job,
+                "interval",
+                hours=24,
+                id="risk_job",
+                replace_existing=True,
+            )
+            scheduler.start()
         try:
             yield
         finally:
-            scheduler.shutdown(wait=False)
+            if scheduler is not None:
+                scheduler.shutdown(wait=False)
 
     app = FastAPI(title=settings.app_name, lifespan=lifespan)
     app.add_middleware(

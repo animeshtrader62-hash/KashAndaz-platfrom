@@ -8,6 +8,8 @@ from .claim import Claim
 from .risk_flag import RiskFlag
 from .missing_cashback_request import MissingCashbackRequest
 from .admin_log import AdminLog
+from .offer import Offer
+from .banner import Banner
 
 __all__ = [
     "User",
@@ -20,4 +22,6 @@ __all__ = [
     "MissingCashbackRequest",
     "RiskFlag",
     "AdminLog",
+    "Offer",
+    "Banner",
 ]

@@ -17,20 +17,40 @@ def run_confirmation_job() -> int:
     db = SessionLocal()
     processed = 0
     try:
-        pending = db.query(Transaction).filter(Transaction.status == "pending").all()
-        for tx in pending:
-            status = affiliate_client.get_status(tx.external_order_id)
-            if status == "confirmed":
-                try:
-                    confirmed_tx = confirm_transaction(db, tx)
-                    notification_service.notify_cashback_confirmed(db, confirmed_tx)
-                    processed += 1
-                except Exception:
-                    db.rollback()
-            elif status == "declined":
-                tx.status = "declined"
-                db.add(tx)
-                db.commit()
+        import time
+
+        BATCH_SIZE = 500
+        MAX_SECONDS = 240
+        started = time.monotonic()
+
+        while True:
+            if time.monotonic() - started > MAX_SECONDS:
+                break
+
+            batch = (
+                db.query(Transaction)
+                .filter(Transaction.status == "pending")
+                .order_by(Transaction.created_at.asc())
+                .limit(BATCH_SIZE)
+                .all()
+            )
+            if not batch:
+                break
+
+            for tx in batch:
+                status = affiliate_client.get_status(tx.external_order_id)
+                if status == "confirmed":
+                    try:
+                        confirmed_tx = confirm_transaction(db, tx)
+                        notification_service.notify_cashback_confirmed(db, confirmed_tx)
+                        processed += 1
+                    except Exception:
+                        db.rollback()
+                elif status == "declined":
+                    tx.status = "declined"
+                    db.add(tx)
+                    db.commit()
+
         return processed
     finally:
         db.close()

@@ -12,6 +12,11 @@ router = APIRouter(prefix="/activate-cashback", tags=["activate"])
 def activate(payload: ActivateRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
     click, response = activate_cashback(db, user, payload.store_id)
     if not click:
+        if response == "no_active_offer":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No active offer for this store",
+            )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Store not active or not found",

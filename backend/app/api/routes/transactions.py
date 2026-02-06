@@ -16,6 +16,11 @@ def _list_user_transactions(
     page: int,
     limit: int,
 ) -> TransactionsResponse:
+    if page < 1:
+        raise HTTPException(status_code=400, detail="page must be >= 1")
+    if limit < 1 or limit > 100:
+        raise HTTPException(status_code=400, detail="limit must be 1..100")
+
     query = db.query(Transaction).filter(Transaction.user_id == user.id)
     if status:
         query = query.filter(Transaction.status == status)
@@ -28,7 +33,9 @@ def _list_user_transactions(
         .all()
     )
 
-    store_map = {s.id: s for s in db.query(Store).all()}
+    store_ids = {tx.store_id for tx in items if tx.store_id}
+    store_rows = db.query(Store).filter(Store.id.in_(store_ids)).all() if store_ids else []
+    store_map = {s.id: s for s in store_rows}
 
     transactions = []
     for tx in items:
@@ -48,7 +55,7 @@ def _list_user_transactions(
             )
         )
 
-    total_pages = (total_items + limit - 1) // limit if limit else 1
+    total_pages = (total_items + limit - 1) // limit
     return TransactionsResponse(
         transactions=transactions,
         pagination={

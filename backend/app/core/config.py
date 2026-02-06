@@ -20,7 +20,9 @@ class Settings(BaseSettings):
     access_token_exp_minutes: int = 60
     refresh_token_exp_days: int = 30
 
-    tracking_redirect_base: str = "https://tracking.example.com/redirect"
+    # Base URL for first-party redirect endpoint.
+    # Production should set this to e.g. https://api.kashandaz.com/api/r
+    tracking_redirect_base: str = "http://localhost:8000/api/r"
 
     webhook_secret: str = "CHANGE_ME_WEBHOOK_SECRET"
     webhook_signature_header: str = "X-Signature"

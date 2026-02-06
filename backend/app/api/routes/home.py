@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends
+from starlette.responses import Response
 from sqlalchemy.orm import Session
 import structlog
 from app.core.auth import get_optional_user

@@ -1,3 +1,4 @@
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.models import Click, Store, Transaction
 
@@ -39,6 +40,22 @@ def create_transaction_from_webhook(
         status="pending",
     )
     db.add(tx)
-    db.commit()
-    db.refresh(tx)
-    return tx, "created"
+    try:
+        db.commit()
+        db.refresh(tx)
+        return tx, "created"
+    except IntegrityError:
+        # Duplicate webhook delivery or concurrent processing can race.
+        # Treat the DB unique constraint as the source of truth.
+        db.rollback()
+        existing = (
+            db.query(Transaction)
+            .filter(
+                Transaction.external_order_id == payload["external_order_id"],
+                Transaction.store_id == store.id,
+            )
+            .first()
+        )
+        if existing:
+            return existing, "duplicate"
+        raise
