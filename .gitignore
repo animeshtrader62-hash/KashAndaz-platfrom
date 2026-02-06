@@ -42,15 +42,13 @@ tools/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-/coverage/
-
-# Personal documents
-Documents/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/build/
+**/coverage/
 
 # Backend secrets
 backend/.env
@@ -61,12 +59,8 @@ backend/uploads/
 backend/uvicorn.out
 backend/uvicorn.err
 
-# Tests are not shipped in this repo
-backend/tests/
-
-# Local git worktrees / backend copies (do not commit)
+# Local git worktrees (do not commit)
 backend-worktree/
-backend/
 
 # Sensitive keys
 Documents/*.pem
@@ -78,6 +72,6 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+public-app/android/app/debug
+public-app/android/app/profile
+public-app/android/app/release

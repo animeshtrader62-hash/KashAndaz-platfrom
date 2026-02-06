@@ -38,6 +38,20 @@ class Settings(BaseSettings):
 
     min_withdrawal_amount: float = 50.0
 
+    def model_post_init(self, __context) -> None:  # type: ignore[override]
+        env = (self.app_env or "development").lower()
+        if env not in {"prod", "production"}:
+            return
+
+        if not self.jwt_secret or self.jwt_secret.startswith("CHANGE_ME"):
+            raise ValueError("JWT_SECRET must be set to a non-default value in production")
+
+        if not self.webhook_secret or self.webhook_secret.startswith("CHANGE_ME"):
+            raise ValueError("WEBHOOK_SECRET must be set to a non-default value in production")
+
+        if not self.tracking_redirect_base or "localhost" in self.tracking_redirect_base:
+            raise ValueError("TRACKING_REDIRECT_BASE must be set for production")
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
