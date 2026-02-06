@@ -69,12 +69,29 @@ def create_app() -> FastAPI:
                 scheduler.shutdown(wait=False)
 
     app = FastAPI(title=settings.app_name, lifespan=lifespan)
+
+    app_env = (getattr(settings, "app_env", None) or os.getenv("APP_ENV") or "development").lower()
+    cors_allow_origin_regex = os.getenv("CORS_ALLOW_ORIGIN_REGEX")
+    cors_allow_origins_raw = os.getenv("CORS_ALLOW_ORIGINS")
+    cors_allow_origins = (
+        [o.strip() for o in cors_allow_origins_raw.split(",") if o.strip()]
+        if cors_allow_origins_raw
+        else None
+    )
+
+    # Production safety: do not allow wildcard CORS unless explicitly configured.
+    if app_env in {"prod", "production"} and not cors_allow_origin_regex and not cors_allow_origins:
+        raise RuntimeError(
+            "Production CORS must be explicitly configured via CORS_ALLOW_ORIGINS or CORS_ALLOW_ORIGIN_REGEX"
+        )
+
     app.add_middleware(
         CORSMiddleware,
         # NOTE: Browsers disallow `Access-Control-Allow-Origin: *` together with
         # `Access-Control-Allow-Credentials: true`. Starlette enforces this.
-        # Using a permissive regex achieves the same goal for development.
-        allow_origin_regex=r".*",
+        # Keep permissive behavior for development, but require explicit config in production.
+        allow_origins=cors_allow_origins or [],
+        allow_origin_regex=cors_allow_origin_regex if cors_allow_origin_regex else (r".*" if app_env not in {"prod", "production"} else None),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
