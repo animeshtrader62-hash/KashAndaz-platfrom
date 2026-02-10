@@ -181,7 +181,7 @@ export function StoresPage() {
         </div>
         <button
           type="button"
-          className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           onClick={openCreate}
         >
           + Add Store
@@ -191,12 +191,12 @@ export function StoresPage() {
       {loading ? (
         <SkeletonTable rows={8} cols={5} />
       ) : error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5">
-          <div className="text-sm font-semibold text-rose-900">Failed to load stores</div>
-          <div className="mt-1 text-sm text-rose-800">{error}</div>
+        <div className="rounded-2xl border border-orange-600 bg-orange-50 p-5">
+          <div className="text-sm font-semibold text-slate-900">Failed to load stores</div>
+          <div className="mt-1 text-sm text-slate-700">{error}</div>
           <button
             type="button"
-            className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+            className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
             onClick={() => void load()}
           >
             Retry
@@ -245,8 +245,8 @@ export function StoresPage() {
                     className={
                       'rounded-lg px-3 py-1.5 text-sm font-semibold ' +
                       (s.is_active
-                        ? 'border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
-                        : 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100')
+                        ? 'border border-orange-600 bg-orange-50 text-orange-600 hover:bg-orange-50'
+                        : 'border border-blue-600 bg-white text-blue-600 hover:bg-slate-50')
                     }
                     onClick={() => void toggleActive(s)}
                   >
@@ -275,7 +275,7 @@ export function StoresPage() {
             <button
               type="button"
               disabled={!canSubmit}
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
               onClick={() => void submit()}
             >
               Save
@@ -289,11 +289,11 @@ export function StoresPage() {
             <input
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
               placeholder="Amazon"
             />
             {!formName.trim() ? (
-              <div className="mt-1 text-xs text-rose-700">Name is required.</div>
+              <div className="mt-1 text-xs text-orange-600">Name is required.</div>
             ) : null}
           </label>
 
@@ -302,7 +302,7 @@ export function StoresPage() {
             <input
               value={formLogoUrl}
               onChange={(e) => setFormLogoUrl(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
               placeholder="https://..."
               title="Logo URL must be a direct image link (.png/.jpg/.jpeg/.webp/.svg)"
             />
@@ -311,7 +311,7 @@ export function StoresPage() {
               Google Images links and website URLs (like https://www.shopsy.in) won’t render as logos.
             </div>
             {formLogoUrl.trim() && !logoValidation.ok ? (
-              <div className="mt-1 text-xs text-rose-700">{logoValidation.reason}</div>
+              <div className="mt-1 text-xs text-orange-600">{logoValidation.reason}</div>
             ) : null}
           </label>
 
@@ -336,7 +336,7 @@ export function StoresPage() {
             <input
               value={formAffiliateBaseUrl}
               onChange={(e) => setFormAffiliateBaseUrl(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
               placeholder="https://affiliate.example.com"
             />
           </label>

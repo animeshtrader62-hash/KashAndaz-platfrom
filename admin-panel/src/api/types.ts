@@ -3,6 +3,7 @@ export type UserOut = {
   name: string
   email: string
   phone?: string | null
+  role?: string | null
   created_at?: string | null
 }
 
@@ -117,4 +118,51 @@ export type AdminDashboardMetrics = {
 
 export type AdminDashboardResponse = {
   metrics: AdminDashboardMetrics
+}
+
+export type AdminUserWalletSummary = {
+  total_earned: number
+  pending: number
+  available: number
+  withdrawn: number
+}
+
+export type AdminUserListItem = {
+  user_id: string
+  email: string
+  status: string
+  wallet_summary: AdminUserWalletSummary
+}
+
+export type AdminUsersListResponse = {
+  users: AdminUserListItem[]
+  pagination: Pagination
+}
+
+export type AdminClaimOut = {
+  id: string
+  user_id: string
+  store_id: string
+  order_id: string
+  description?: string | null
+  screenshot_url?: string | null
+  status: string
+  created_at?: string | null
+  resolved_at?: string | null
+}
+
+export type AdminClaimsListResponse = {
+  claims: AdminClaimOut[]
+  pagination: Pagination
+}
+
+export type AdminClaimAuditEvent = {
+  id: string
+  admin_id: string
+  action: string
+  created_at?: string | null
+}
+
+export type AdminClaimAuditResponse = {
+  events: AdminClaimAuditEvent[]
 }

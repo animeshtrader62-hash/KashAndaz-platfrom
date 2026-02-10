@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 type ToastType = 'success' | 'error' | 'info'
 
@@ -18,21 +18,45 @@ type ToastContextValue = {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 function cls(type: ToastType) {
-  if (type === 'success') return 'border-emerald-200 bg-emerald-50 text-emerald-900'
-  if (type === 'error') return 'border-rose-200 bg-rose-50 text-rose-900'
+  if (type === 'success') return 'border-blue-600 bg-white text-slate-900'
+  if (type === 'error') return 'border-orange-600 bg-orange-50 text-slate-900'
   return 'border-slate-200 bg-white text-slate-900'
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
 
+  const mountedRef = useRef(true)
+  const timeoutByToastIdRef = useRef<Record<string, number>>({})
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+      for (const id of Object.values(timeoutByToastIdRef.current)) {
+        window.clearTimeout(id)
+      }
+      timeoutByToastIdRef.current = {}
+    }
+  }, [])
+
+  const dismiss = useCallback((id: string) => {
+    const timeoutId = timeoutByToastIdRef.current[id]
+    if (timeoutId) {
+      window.clearTimeout(timeoutId)
+      delete timeoutByToastIdRef.current[id]
+    }
+    setToasts((prev) => prev.filter((t) => t.id !== id))
+  }, [])
+
   const push = useCallback((type: ToastType, message: string) => {
     const id = `${Date.now()}_${Math.random().toString(16).slice(2)}`
     setToasts((prev) => [...prev, { id, type, message }])
-    window.setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id))
+    const timeoutId = window.setTimeout(() => {
+      if (!mountedRef.current) return
+      dismiss(id)
     }, 4500)
-  }, [])
+    timeoutByToastIdRef.current[id] = timeoutId
+  }, [dismiss])
 
   const value = useMemo<ToastContextValue>(
     () => ({
@@ -53,11 +77,20 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             className={
-              'rounded-xl border px-4 py-3 text-sm shadow-sm ' +
+              'flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm shadow-sm ' +
               cls(t.type)
             }
           >
-            {t.message}
+            <div className="min-w-0 flex-1 break-words">{t.message}</div>
+            <button
+              type="button"
+              className="shrink-0 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              onClick={() => dismiss(t.id)}
+              aria-label="Dismiss notification"
+              title="Dismiss"
+            >
+              Close
+            </button>
           </div>
         ))}
       </div>

@@ -13,10 +13,10 @@ export function AccessDeniedPage() {
 
       <div className="mt-6 flex gap-2">
         <Link
-          to="/login"
-          className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+          to="/"
+          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
         >
-          Back to login
+          Go to dashboard
         </Link>
       </div>
     </div>

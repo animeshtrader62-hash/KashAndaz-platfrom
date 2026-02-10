@@ -55,7 +55,7 @@ export async function httpRequest<T = unknown>(
   options: RequestOptions = {},
 ): Promise<T> {
   const controller = new AbortController()
-  const timeout = options.timeoutMs ?? 20000
+  const timeout = options.timeoutMs ?? 8000
   const id = window.setTimeout(() => controller.abort(), timeout)
 
   try {

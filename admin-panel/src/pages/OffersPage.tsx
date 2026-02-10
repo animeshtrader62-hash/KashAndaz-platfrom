@@ -152,7 +152,7 @@ export function OffersPage() {
     setError(null)
     try {
       const [storesRes, offersRes] = await Promise.all([
-        adminApi.listStores(token, 1, 200),
+        adminApi.listStores(token, 1, 50),
         adminApi.listOffers(token, {
           store_id: filterStoreId || undefined,
           status: filterStatus || undefined,
@@ -187,7 +187,7 @@ export function OffersPage() {
       toast.success('Store created')
 
       // Refresh store list and preselect newly created store for the offer.
-      const storesRes = await adminApi.listStores(token, 1, 200)
+      const storesRes = await adminApi.listStores(token, 1, 50)
       setStores(storesRes.stores)
       setFormStoreId(created.id)
 
@@ -302,7 +302,7 @@ export function OffersPage() {
         </div>
         <button
           type="button"
-          className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           onClick={openCreate}
         >
           + Add Offer
@@ -311,9 +311,7 @@ export function OffersPage() {
 
       <div className="flex flex-wrap items-end gap-3">
         <label className="block">
-          <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Store
-          </div>
+          <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Store</div>
           <select
             value={filterStoreId}
             onChange={(e) => setFilterStoreId(e.target.value)}
@@ -329,13 +327,11 @@ export function OffersPage() {
         </label>
 
         <label className="block">
-          <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Status
-          </div>
+          <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Status</div>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+            className="w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
           >
             <option value="">All</option>
             <option value="active">active</option>
@@ -355,12 +351,12 @@ export function OffersPage() {
       {loading ? (
         <SkeletonTable rows={8} cols={5} />
       ) : error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5">
-          <div className="text-sm font-semibold text-rose-900">Failed to load offers</div>
-          <div className="mt-1 text-sm text-rose-800">{error}</div>
+        <div className="rounded-2xl border border-orange-600 bg-orange-50 p-5">
+          <div className="text-sm font-semibold text-slate-900">Failed to load offers</div>
+          <div className="mt-1 text-sm text-slate-700">{error}</div>
           <button
             type="button"
-            className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+            className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
             onClick={() => void load()}
           >
             Retry
@@ -403,8 +399,8 @@ export function OffersPage() {
                     className={
                       'rounded-lg px-3 py-1.5 text-sm font-semibold ' +
                       (o.status === 'active'
-                        ? 'border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
-                        : 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100')
+                        ? 'border border-orange-600 bg-orange-50 text-orange-600 hover:bg-orange-50'
+                        : 'border border-blue-600 bg-white text-blue-600 hover:bg-slate-50')
                     }
                     onClick={() => void toggleStatus(o)}
                   >
@@ -433,7 +429,7 @@ export function OffersPage() {
             <button
               type="button"
               disabled={!canSubmit}
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
               onClick={() => void submit()}
             >
               Save
@@ -459,7 +455,7 @@ export function OffersPage() {
               value={formStoreId}
               disabled={editorMode === 'edit'}
               onChange={(e) => setFormStoreId(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400 disabled:bg-slate-50"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 disabled:bg-slate-50"
             >
               <option value="">Select a store</option>
               {activeStores.map((s) => (
@@ -472,7 +468,7 @@ export function OffersPage() {
               Only active stores can have new offers. If the platform isn’t listed yet, create it here.
             </div>
             {editorMode === 'create' && !formStoreId ? (
-              <div className="mt-1 text-xs text-rose-700">Store is required.</div>
+              <div className="mt-1 text-xs text-orange-600">Store is required.</div>
             ) : null}
           </label>
 
@@ -481,14 +477,14 @@ export function OffersPage() {
             <input
               value={formTitle}
               onChange={(e) => setFormTitle(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
               placeholder="Prime Day Deals"
             />
             <div className="mt-1 text-xs text-slate-500">
-              Use the platform/campaign name. Offer18 automation can be added later.
+              Use a clear platform/campaign name.
             </div>
             {!formTitle.trim() ? (
-              <div className="mt-1 text-xs text-rose-700">Title is required.</div>
+              <div className="mt-1 text-xs text-orange-600">Title is required.</div>
             ) : null}
           </label>
 
@@ -497,7 +493,7 @@ export function OffersPage() {
             <textarea
               value={formDescription}
               onChange={(e) => setFormDescription(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
               placeholder="Optional"
               rows={3}
             />
@@ -508,14 +504,14 @@ export function OffersPage() {
             <input
               value={formAffiliateUrl}
               onChange={(e) => setFormAffiliateUrl(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
               placeholder="https://..."
             />
             <div className="mt-1 text-xs text-slate-500">
               Paste the final affiliate link you want users to be redirected to.
             </div>
             {formAffiliateUrl.trim() && !formAffiliateUrl.trim().startsWith('https://') ? (
-              <div className="mt-1 text-xs text-rose-700">Must start with https://</div>
+              <div className="mt-1 text-xs text-orange-600">Must start with https://</div>
             ) : null}
           </label>
 
@@ -524,11 +520,11 @@ export function OffersPage() {
             <input
               value={formCashbackText}
               onChange={(e) => setFormCashbackText(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
               placeholder="Up to 5%"
             />
             {!formCashbackText.trim() ? (
-              <div className="mt-1 text-xs text-rose-700">Cashback text is required.</div>
+              <div className="mt-1 text-xs text-orange-600">Cashback text is required.</div>
             ) : null}
           </label>
 
@@ -538,7 +534,7 @@ export function OffersPage() {
               type="datetime-local"
               value={formStartAt}
               onChange={(e) => setFormStartAt(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
             />
           </label>
 
@@ -548,10 +544,10 @@ export function OffersPage() {
               type="datetime-local"
               value={formEndAt}
               onChange={(e) => setFormEndAt(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
             />
             {formStartAt && formEndAt && new Date(formStartAt).getTime() >= new Date(formEndAt).getTime() ? (
-              <div className="mt-1 text-xs text-rose-700">start_at must be before end_at</div>
+              <div className="mt-1 text-xs text-orange-600">start_at must be before end_at</div>
             ) : null}
           </label>
 
@@ -560,7 +556,7 @@ export function OffersPage() {
             <select
               value={formStatus}
               onChange={(e) => setFormStatus(e.target.value === 'active' ? 'active' : 'inactive')}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
             >
               <option value="inactive">inactive</option>
               <option value="active">active</option>
@@ -586,7 +582,7 @@ export function OffersPage() {
             <button
               type="button"
               disabled={!canCreateStore}
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
               onClick={() => void submitStore()}
             >
               Create
@@ -619,7 +615,7 @@ export function OffersPage() {
               Website URLs and Google Images links will not work.
             </div>
             {storeFormLogoUrl.trim() && !storeLogoValidation.ok ? (
-              <div className="mt-1 text-xs text-rose-700">{storeLogoValidation.reason}</div>
+              <div className="mt-1 text-xs text-orange-600">{storeLogoValidation.reason}</div>
             ) : null}
           </label>
 
@@ -648,7 +644,7 @@ export function OffersPage() {
               placeholder="https://..."
             />
             {storeFormAffiliateBaseUrl.trim() && !storeFormAffiliateBaseUrl.trim().startsWith('https://') ? (
-              <div className="mt-1 text-xs text-rose-700">Must start with https://</div>
+              <div className="mt-1 text-xs text-orange-600">Must start with https://</div>
             ) : null}
           </label>
 

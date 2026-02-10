@@ -3,7 +3,7 @@ export function SkeletonTable({ rows = 6, cols = 4 }: { rows?: number; cols?: nu
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="divide-y divide-slate-100">
         {Array.from({ length: rows }).map((_, r) => (
-          <div key={r} className="grid animate-pulse grid-cols-12 gap-3 px-4 py-3">
+          <div key={r} className="grid grid-cols-12 gap-3 px-4 py-3">
             {Array.from({ length: cols }).map((__, c) => (
               <div
                 key={c}

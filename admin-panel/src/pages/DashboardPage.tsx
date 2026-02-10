@@ -46,12 +46,12 @@ export function DashboardPage() {
       {loading ? (
         <SkeletonTable rows={4} cols={4} />
       ) : error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5">
-          <div className="text-sm font-semibold text-rose-900">Failed to load metrics</div>
-          <div className="mt-1 text-sm text-rose-800">{error}</div>
+        <div className="rounded-2xl border border-orange-600 bg-orange-50 p-5">
+          <div className="text-sm font-semibold text-slate-900">Failed to load metrics</div>
+          <div className="mt-1 text-sm text-slate-700">{error}</div>
           <button
             type="button"
-            className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+            className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
             onClick={() => {
               toast.info('Refreshing…')
               void load()
@@ -67,7 +67,6 @@ export function DashboardPage() {
               title="Total Users"
               value={metrics.total_users.toLocaleString()}
               titleHint="Counts reflect actual database users"
-              subtitle="Includes seeded test users in local/dev environment"
             />
             <MetricCard title="Total Orders" value={metrics.total_orders.toLocaleString()} subtitle="All-time" />
             <MetricCard title="Pending Cashback" value={formatInr(metrics.pending_cashback)} subtitle="Awaiting confirmation" />
@@ -77,7 +76,7 @@ export function DashboardPage() {
           <div className="rounded-2xl border border-slate-200 bg-white p-6">
             <div className="text-sm font-semibold text-slate-900">Paid cashback</div>
             <div className="mt-1 text-2xl font-bold text-slate-900">{formatInr(metrics.paid_cashback)}</div>
-            <div className="mt-1 text-sm text-slate-600">Charts are out of scope for Phase-2.</div>
+            <div className="mt-1 text-sm text-slate-600">Charts are not available in this view.</div>
           </div>
         </>
       ) : (

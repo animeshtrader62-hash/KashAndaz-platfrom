@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { adminApi } from '../api/admin'
 import type { BannerCreate, BannerOut, BannerUpdate, OfferOut } from '../api/types'
 import { ApiError } from '../api/errors'
-import { API_BASE_URL } from '../api/config'
 import { useAuth } from '../auth/AuthContext'
 import { Modal } from '../components/Modal'
 import { SafeImage } from '../components/SafeImage'
@@ -139,7 +138,7 @@ export function BannersPage() {
     setError(null)
     try {
       const [offersRes, bannersRes] = await Promise.all([
-        adminApi.listOffers(token, { page: 1, limit: 100 }),
+        adminApi.listOffers(token, { page: 1, limit: 50 }),
         adminApi.listBanners(token, bannersQuery),
       ])
       setOffers(offersRes.offers)
@@ -308,13 +307,10 @@ export function BannersPage() {
         <div>
           <h2 className="text-xl font-bold text-slate-900">Banners</h2>
           <p className="mt-1 text-sm text-slate-600">Manage promotional banners.</p>
-          <div className="mt-1 text-xs text-slate-500">
-            API: <span className="font-mono">{API_BASE_URL}</span> · query: page={bannersQuery.page}, limit={bannersQuery.limit}
-          </div>
         </div>
         <button
           type="button"
-          className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           onClick={openCreate}
         >
           + Add Banner
@@ -347,7 +343,7 @@ export function BannersPage() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+            className="w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
           >
             <option value="">All</option>
             <option value="active">active</option>
@@ -367,12 +363,12 @@ export function BannersPage() {
       {loading ? (
         <SkeletonTable rows={8} cols={5} />
       ) : error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5">
-          <div className="text-sm font-semibold text-rose-900">Failed to load banners</div>
-          <div className="mt-1 text-sm text-rose-800">{error}</div>
+        <div className="rounded-2xl border border-orange-600 bg-orange-50 p-5">
+          <div className="text-sm font-semibold text-slate-900">Failed to load banners</div>
+          <div className="mt-1 text-sm text-slate-700">{error}</div>
           <button
             type="button"
-            className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+            className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
             onClick={() => void load()}
           >
             Retry
@@ -398,11 +394,12 @@ export function BannersPage() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-16 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-                      <img
+                      <SafeImage
                         src={b.image_url}
                         alt={offer?.title ?? b.offer_id}
-                        className="h-full w-full object-contain"
-                        loading="lazy"
+                        className="h-full w-full"
+                        imgClassName="h-full w-full object-contain"
+                        fallbackClassName="flex h-full w-full items-center justify-center bg-slate-100 text-slate-300"
                       />
                     </div>
                     <div className="text-xs text-slate-600 break-all max-w-[480px]">{b.image_url}</div>
@@ -430,8 +427,8 @@ export function BannersPage() {
                       className={
                         'rounded-lg px-3 py-1.5 text-sm font-semibold ' +
                         (b.status === 'active'
-                          ? 'border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
-                          : 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100')
+                          ? 'border border-orange-600 bg-orange-50 text-orange-600 hover:bg-orange-50'
+                          : 'border border-blue-600 bg-white text-blue-600 hover:bg-slate-50')
                       }
                       onClick={() => void toggleStatus(b)}
                     >
@@ -461,7 +458,7 @@ export function BannersPage() {
             <button
               type="button"
               disabled={!canSubmit}
-              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
               onClick={() => void submit()}
             >
               Save
@@ -474,14 +471,7 @@ export function BannersPage() {
           <ul className="mt-1 space-y-1 text-sm text-slate-700">
             <li>Banner clicks redirect users to the linked offer.</li>
             <li>If a banner is inactive or out of its time window, it won’t appear in the app.</li>
-            <li>
-              <span className="inline-flex items-center gap-2">
-                <span className="rounded-full bg-slate-900 px-2 py-0.5 text-xs font-semibold text-white">
-                  Phase 2 (Live APIs, No Storage)
-                </span>
-                <span className="text-sm">Uploads are preview-only.</span>
-              </span>
-            </li>
+            <li>Images are stored as URLs. Provide a direct HTTPS image link.</li>
           </ul>
         </div>
 
@@ -492,7 +482,7 @@ export function BannersPage() {
               value={formOfferId}
               disabled={editorMode === 'edit'}
               onChange={(e) => setFormOfferId(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400 disabled:bg-slate-50"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600 disabled:bg-slate-50"
             >
               <option value="">Select an offer</option>
               {(editorMode === 'create' ? activeOffers : offers).map((o) => (
@@ -502,11 +492,11 @@ export function BannersPage() {
               ))}
             </select>
             {editorMode === 'create' && activeOffers.length === 0 ? (
-              <div className="mt-1 text-xs text-rose-700">
+              <div className="mt-1 text-xs text-orange-600">
                 No offers found. Create an offer first to attach banners.
               </div>
             ) : editorMode === 'create' && !formOfferId ? (
-              <div className="mt-1 text-xs text-rose-700">Select an active offer to continue.</div>
+              <div className="mt-1 text-xs text-orange-600">Select an active offer to continue.</div>
             ) : (
               <div className="mt-1 text-xs text-slate-500">Only active offers are selectable for new banners.</div>
             )}
@@ -523,7 +513,7 @@ export function BannersPage() {
               </div>
               <div className="mt-1 text-xs text-slate-700 break-all">{selectedOffer.affiliate_redirect_url}</div>
               <div className="mt-2 text-xs text-slate-500">
-                Tip: Ensure this is the final affiliate redirect URL (Offer18 automation can be added later).
+                Tip: Ensure this is the final affiliate redirect URL.
               </div>
             </div>
           ) : null}
@@ -533,7 +523,7 @@ export function BannersPage() {
             <input
               value={formImageUrl}
               onChange={(e) => setFormImageUrl(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
               placeholder="https://..."
             />
             <div className="mt-1 text-xs text-slate-500">
@@ -546,7 +536,7 @@ export function BannersPage() {
               </div>
             ) : null}
             {!uploadPreviewUrl && !imageUrlValidation.ok ? (
-              <div className="mt-1 text-xs text-rose-700">{imageUrlValidation.reason}</div>
+              <div className="mt-1 text-xs text-orange-600">{imageUrlValidation.reason}</div>
             ) : null}
           </label>
 
@@ -555,7 +545,7 @@ export function BannersPage() {
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp,image/svg+xml"
-              className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-xl file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800"
+              className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-xl file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-700"
               onChange={(e) => onSelectFile(e.target.files?.[0] ?? null)}
             />
             {uploadFile ? (
@@ -564,8 +554,7 @@ export function BannersPage() {
               </div>
             ) : null}
             <div className="mt-1 text-xs text-slate-500">
-              Upload is preview-only. No server upload in Phase 2.
-              Host the image somewhere and paste the HTTPS direct image URL to save.
+              Upload is preview-only. Paste a direct HTTPS image URL to save.
             </div>
           </label>
 
@@ -592,7 +581,7 @@ export function BannersPage() {
                 <div className="font-semibold text-slate-700">Preview source</div>
                 <div className="mt-1">{uploadPreviewUrl ? 'Uploaded file (preview only)' : 'Image URL'}</div>
                 {previewSrc && previewLoadFailed ? (
-                  <div className="mt-1 text-xs text-rose-700">Image failed to load. Check the URL.</div>
+                  <div className="mt-1 text-xs text-orange-600">Image failed to load. Check the URL.</div>
                 ) : null}
                 {uploadPreviewUrl ? (
                   <div className="mt-2 text-xs text-slate-500">If both upload + URL exist, the URL is what gets saved.</div>
@@ -607,7 +596,7 @@ export function BannersPage() {
               type="number"
               value={formPriority}
               onChange={(e) => setFormPriority(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
               min={1}
               max={100}
             />
@@ -619,13 +608,13 @@ export function BannersPage() {
             <select
               value={formStatus}
               onChange={(e) => setFormStatus(e.target.value === 'active' ? 'active' : 'inactive')}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
             >
               <option value="inactive">inactive</option>
               <option value="active">active</option>
             </select>
             {formStatus === 'active' && formOfferId && offerById.get(formOfferId)?.status !== 'active' ? (
-              <div className="mt-1 text-xs text-rose-700">Offer must be active to activate banner.</div>
+              <div className="mt-1 text-xs text-orange-600">Offer must be active to activate banner.</div>
             ) : null}
           </label>
 
@@ -635,7 +624,7 @@ export function BannersPage() {
               type="datetime-local"
               value={formStartAt}
               onChange={(e) => setFormStartAt(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
             />
           </label>
 
@@ -645,10 +634,10 @@ export function BannersPage() {
               type="datetime-local"
               value={formEndAt}
               onChange={(e) => setFormEndAt(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
             />
             {formStartAt && formEndAt && new Date(formStartAt).getTime() >= new Date(formEndAt).getTime() ? (
-              <div className="mt-1 text-xs text-rose-700">start_at must be before end_at</div>
+              <div className="mt-1 text-xs text-orange-600">start_at must be before end_at</div>
             ) : null}
           </label>
         </div>

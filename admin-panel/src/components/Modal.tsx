@@ -24,7 +24,7 @@ export function Modal({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4">
       <div className="flex w-full max-w-2xl max-h-[90vh] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
         <div className="shrink-0 flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <div className="text-sm font-semibold text-slate-900">{title}</div>

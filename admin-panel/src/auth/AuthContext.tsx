@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login as loginApi } from '../api/auth'
+import { login as loginApi, logout as logoutApi } from '../api/auth'
 import { adminApi } from '../api/admin'
 import { ApiError } from '../api/errors'
 import type { UserOut } from '../api/types'
@@ -51,13 +51,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyInFlight = useRef<Promise<boolean> | null>(null)
 
   const logout = useCallback(() => {
+    const currentToken = token
+    if (currentToken) {
+      void logoutApi(currentToken).catch(() => {
+        // Best-effort: clear local auth even if server is unavailable.
+      })
+    }
     clearAllAuth()
     setToken(null)
     setUser(null)
     setAdminVerified(false)
     setAccessDenied(false)
     navigate('/login', { replace: true })
-  }, [navigate])
+  }, [navigate, token])
 
   const ensureAdminVerified = useCallback(async (tokenOverride?: string) => {
     const effectiveToken = tokenOverride ?? token

@@ -2,12 +2,15 @@ import { ADMIN_PREFIX, buildApiUrl } from './config'
 import { httpRequest, jsonBody } from './http'
 import type {
   AdminBannersListResponse,
+  AdminClaimAuditResponse,
+  AdminClaimsListResponse,
   AdminDashboardResponse,
   AdminOffersListResponse,
   AdminStoreCreate,
   AdminStoreListItem,
   AdminStoresListResponse,
   AdminStoreUpdate,
+  AdminUsersListResponse,
   BannerCreate,
   BannerOut,
   BannerUpdate,
@@ -23,7 +26,7 @@ function clampInt(value: unknown, min: number, max: number, fallback: number): n
 }
 
 function clampLimit100(value: unknown, fallback: number): number {
-  return clampInt(value, 1, 100, fallback)
+  return clampInt(value, 1, 50, fallback)
 }
 
 export const adminApi = {
@@ -35,8 +38,7 @@ export const adminApi = {
 
   listStores(token: string, page = 1, limit = 50) {
     const safePage = clampInt(page, 1, 10_000, 1)
-    // Backend stores endpoint allows up to 200.
-    const safeLimit = clampInt(limit, 1, 200, 50)
+    const safeLimit = clampInt(limit, 1, 50, 50)
     const qs = new URLSearchParams({ page: String(safePage), limit: String(safeLimit) })
     return httpRequest<AdminStoresListResponse>(
       buildApiUrl(`${ADMIN_PREFIX}/stores?${qs.toString()}`),
@@ -142,5 +144,73 @@ export const adminApi = {
       method: 'PATCH',
       body: jsonBody({ status }),
     }, { token })
+  },
+
+  listUsers(token: string, params?: { search?: string; page?: number; limit?: number }) {
+    const qs = new URLSearchParams()
+    if (params?.search) qs.set('search', params.search)
+    qs.set('page', String(clampInt(params?.page, 1, 10_000, 1)))
+    qs.set('limit', String(clampLimit100(params?.limit, 20)))
+    return httpRequest<AdminUsersListResponse>(
+      buildApiUrl(`${ADMIN_PREFIX}/users?${qs.toString()}`),
+      { method: 'GET' },
+      { token },
+    )
+  },
+
+  blockUser(token: string, userId: string) {
+    return httpRequest<{ status: string; user_id: string; blocked: boolean }>(
+      buildApiUrl(`${ADMIN_PREFIX}/users/${userId}/block`),
+      { method: 'POST' },
+      { token },
+    )
+  },
+
+  unblockUser(token: string, userId: string) {
+    return httpRequest<{ status: string; user_id: string; blocked: boolean }>(
+      buildApiUrl(`${ADMIN_PREFIX}/users/${userId}/unblock`),
+      { method: 'POST' },
+      { token },
+    )
+  },
+
+  listClaims(
+    token: string,
+    params?: { status?: string; search?: string; page?: number; limit?: number },
+  ) {
+    const qs = new URLSearchParams()
+    if (params?.status) qs.set('status', params.status)
+    if (params?.search) qs.set('search', params.search)
+    qs.set('page', String(clampInt(params?.page, 1, 10_000, 1)))
+    qs.set('limit', String(clampLimit100(params?.limit, 20)))
+    return httpRequest<AdminClaimsListResponse>(
+      buildApiUrl(`${ADMIN_PREFIX}/claims?${qs.toString()}`),
+      { method: 'GET' },
+      { token },
+    )
+  },
+
+  approveClaim(token: string, claimId: string, creditAmount: number) {
+    return httpRequest<{ status: string; claim_id: string; state: string }>(
+      buildApiUrl(`${ADMIN_PREFIX}/claims/${claimId}/approve?credit_amount=${encodeURIComponent(String(creditAmount))}`),
+      { method: 'POST' },
+      { token },
+    )
+  },
+
+  rejectClaim(token: string, claimId: string) {
+    return httpRequest<{ status: string; claim_id: string; state: string }>(
+      buildApiUrl(`${ADMIN_PREFIX}/claims/${claimId}/reject`),
+      { method: 'POST' },
+      { token },
+    )
+  },
+
+  claimAudit(token: string, claimId: string) {
+    return httpRequest<AdminClaimAuditResponse>(
+      buildApiUrl(`${ADMIN_PREFIX}/claims/${claimId}/audit`),
+      { method: 'GET' },
+      { token },
+    )
   },
 }

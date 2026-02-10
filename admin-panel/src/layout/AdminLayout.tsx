@@ -1,11 +1,15 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/stores', label: 'Stores' },
-  { to: '/offers', label: 'Offers' },
-  { to: '/banners', label: 'Banners' },
+type NavItemDef = { to: string; label: string; roles: Array<'viewer' | 'admin' | 'super_admin'> }
+
+const navItems: NavItemDef[] = [
+  { to: '/dashboard', label: 'Dashboard', roles: ['viewer', 'admin', 'super_admin'] },
+  { to: '/stores', label: 'Stores', roles: ['admin', 'super_admin'] },
+  { to: '/offers', label: 'Offers', roles: ['admin', 'super_admin'] },
+  { to: '/banners', label: 'Banners', roles: ['admin', 'super_admin'] },
+  { to: '/claims', label: 'Claims', roles: ['viewer', 'admin', 'super_admin'] },
+  { to: '/users', label: 'Users', roles: ['super_admin'] },
 ]
 
 function NavItem({ to, label }: { to: string; label: string }) {
@@ -14,9 +18,9 @@ function NavItem({ to, label }: { to: string; label: string }) {
       to={to}
       className={({ isActive }) =>
         [
-          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium',
+          'flex items-center gap-3 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium',
           isActive
-            ? 'bg-slate-900 text-white'
+            ? 'bg-blue-600 text-white'
             : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900',
         ].join(' ')
       }
@@ -31,6 +35,12 @@ export function AdminLayout() {
   const location = useLocation()
   const { user, logout } = useAuth()
 
+  const roleRaw = String(user?.role || '').toLowerCase()
+  const isKnownRole = (r: string): r is 'viewer' | 'admin' | 'super_admin' =>
+    r === 'viewer' || r === 'admin' || r === 'super_admin'
+  const role = isKnownRole(roleRaw) ? roleRaw : null
+  const visibleNav = role ? navItems.filter((n) => n.roles.includes(role)) : navItems.slice(0, 1)
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto flex min-h-screen max-w-[1400px]">
@@ -40,32 +50,32 @@ export function AdminLayout() {
               KashAndaz
             </div>
             <div className="text-lg font-semibold text-slate-900">Admin Panel</div>
-            <div className="mt-2 text-xs text-slate-600">Phase 2 (Live APIs, No Storage)</div>
-            <div className="mt-1 text-xs text-slate-500">Uploads are preview-only</div>
-            <div className="mt-1 text-xs text-slate-500">Offer18 automation not enabled yet</div>
           </div>
 
           <nav className="space-y-1">
-            {navItems.map((n) => (
+            {visibleNav.map((n) => (
               <NavItem key={n.to} to={n.to} label={n.label} />
             ))}
           </nav>
 
           <div className="mt-6 rounded-xl border border-slate-200 bg-white p-3">
             <div className="text-xs font-semibold text-slate-700">Status</div>
-            <div className="mt-1 text-xs text-slate-600">
-              Connected via JWT to admin APIs.
-            </div>
+            <div className="mt-1 text-xs text-slate-600">Authenticated</div>
             {user ? (
               <div className="mt-2 text-xs text-slate-500">
                 Signed in as <span className="font-medium text-slate-700">{user.email}</span>
+                {user.role ? (
+                  <span className="ml-2 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                    {String(user.role).toUpperCase()}
+                  </span>
+                ) : null}
               </div>
             ) : null}
           </div>
         </aside>
 
         <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
+          <header className="sticky top-0 z-10 border-b border-slate-200 bg-white">
             <div className="flex items-center justify-between px-4 py-3 md:px-6">
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -77,17 +87,6 @@ export function AdminLayout() {
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="hidden items-center gap-2 md:flex">
-                  <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-700">
-                    Phase 2
-                  </span>
-                  <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-xs text-slate-600">
-                    No storage
-                  </span>
-                  <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-xs text-slate-600">
-                    Uploads preview-only
-                  </span>
-                </div>
                 <button
                   type="button"
                   className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -98,6 +97,14 @@ export function AdminLayout() {
                   Logout
                 </button>
               </div>
+            </div>
+
+            <div className="border-t border-slate-200 px-4 py-2 md:hidden">
+              <nav className="flex items-center gap-2 overflow-x-auto">
+                {visibleNav.map((n) => (
+                  <NavItem key={n.to} to={n.to} label={n.label} />
+                ))}
+              </nav>
             </div>
           </header>
 

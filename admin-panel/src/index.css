@@ -10,5 +10,30 @@
   body {
     @apply bg-slate-50 text-slate-900;
   }
+
+  /* No animations; only subtle, instant transitions (<= 120ms). */
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    transition:
+      color 100ms ease-out,
+      background-color 100ms ease-out,
+      border-color 100ms ease-out,
+      opacity 100ms ease-out;
+  }
+
+  a {
+    @apply text-blue-600;
+  }
+
+  a:hover {
+    opacity: 0.9;
+  }
+
+  button:not(:disabled):hover {
+    opacity: 0.95;
+  }
 }
 
