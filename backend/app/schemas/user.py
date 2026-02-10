@@ -7,6 +7,7 @@ class UserOut(BaseModel):
     name: str
     email: EmailStr
     phone: str | None = None
+    role: str | None = None
     created_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)

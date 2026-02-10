@@ -136,8 +136,10 @@ def list_offers(
 ):
     if page < 1:
         raise HTTPException(status_code=400, detail="page must be >= 1")
-    if limit < 1 or limit > 100:
-        raise HTTPException(status_code=400, detail="limit must be 1..100")
+    if limit < 1:
+        raise HTTPException(status_code=400, detail="limit must be >= 1")
+    if limit > 50:
+        limit = 50
 
     q = db.query(Offer)
     if store_id:

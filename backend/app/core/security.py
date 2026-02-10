@@ -3,13 +3,14 @@ from jose import jwt
 from passlib.context import CryptContext
 from .config import settings
 
-# Passlib's Argon2 defaults can be very expensive on some dev machines (esp. Windows),
-# leading to multi-second login verification. The hash itself encodes its parameters,
-# so lowering *new* hash defaults does not break verification of existing users.
+# Password hashing
+# - Default to bcrypt for predictable latency and broad compatibility.
+# - Keep argon2 verification enabled for backward compatibility (existing hashes).
 pwd_context = CryptContext(
-    schemes=["argon2"],
+    schemes=["bcrypt", "argon2"],
     deprecated="auto",
-    # Keep time_cost reasonable; reduce memory/parallelism for practical latency.
+    bcrypt__rounds=12,
+    # Argon2 params used only if/when generating argon2 hashes.
     argon2__time_cost=2,
     argon2__memory_cost=32768,  # KiB (32 MiB)
     argon2__parallelism=2,
@@ -24,9 +25,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def create_access_token(subject: str) -> str:
+def create_access_token(subject: str, role: str | None = None, token_version: int | None = None) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_exp_minutes)
     to_encode = {"sub": subject, "exp": expire}
+    if role:
+        to_encode["role"] = role
+    if token_version is not None:
+        to_encode["tv"] = int(token_version)
     return jwt.encode(to_encode, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 

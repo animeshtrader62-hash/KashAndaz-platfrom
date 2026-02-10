@@ -25,17 +25,21 @@ def create_app() -> FastAPI:
     configure_sentry()
     logger = structlog.get_logger(__name__)
 
+    app_env = (getattr(settings, "app_env", None) or os.getenv("APP_ENV") or "development").lower()
+
     if os.getenv("MEMORY_DEBUG") == "1":
         tracemalloc.start()
         logger.info("memory_debug_enabled")
 
-    # Ensure all tables exist (MVP, no migrations yet).
-    try:
-        Base.metadata.create_all(engine)
-    except Exception:
-        # In some environments (e.g. tests/CI) the configured DB may not be available.
-        # Tests override the DB dependency and create schema separately.
-        pass
+    # Dev convenience only. In production, schema is managed by Alembic migrations.
+    auto_create_schema = os.getenv("AUTO_CREATE_SCHEMA", "1") == "1"
+    if app_env != "production" and auto_create_schema:
+        try:
+            Base.metadata.create_all(engine)
+        except Exception:
+            # In some environments (e.g. tests/CI) the configured DB may not be available.
+            # Tests override the DB dependency and create schema separately.
+            pass
 
     # IMPORTANT: APScheduler's BackgroundScheduler runs in-process.
     # In production, multi-worker setups (e.g. Uvicorn/Gunicorn workers) would
@@ -70,7 +74,6 @@ def create_app() -> FastAPI:
 
     app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
-    app_env = (getattr(settings, "app_env", None) or os.getenv("APP_ENV") or "development").lower()
     cors_allow_origin_regex = os.getenv("CORS_ALLOW_ORIGIN_REGEX")
     cors_allow_origins_raw = os.getenv("CORS_ALLOW_ORIGINS")
     cors_allow_origins = (

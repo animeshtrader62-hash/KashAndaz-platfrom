@@ -15,6 +15,7 @@ from .routes.admin.users import router as admin_users_router
 from .routes.admin.orders import router as admin_orders_router
 from .routes.admin.offers import router as admin_offers_router
 from .routes.admin.banners import router as admin_banners_router
+from .routes.admin.auth import router as admin_auth_router
 from .routes.home import router as home_router
 from .routes.wallet import router as wallet_router
 from .routes.transactions import router as transactions_router
@@ -36,6 +37,7 @@ api_router.include_router(admin_withdrawals_router)
 api_router.include_router(claims_router)
 api_router.include_router(admin_claims_router)
 api_router.include_router(admin_router)
+api_router.include_router(admin_auth_router)
 api_router.include_router(admin_stores_router)
 api_router.include_router(admin_dashboard_router)
 api_router.include_router(admin_users_router)

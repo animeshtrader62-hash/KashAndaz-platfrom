@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from app.core.auth import require_admin
+from app.core.auth import require_admin_viewer
 from app.db.deps import get_db
 from app.models import User, Transaction
 from app.schemas.admin.dashboard import AdminDashboardResponse, AdminDashboardMetrics
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/admin/dashboard", tags=["admin"])
 
 
 @router.get("", response_model=AdminDashboardResponse)
-def dashboard(db: Session = Depends(get_db), _=Depends(require_admin)):
+def dashboard(db: Session = Depends(get_db), _=Depends(require_admin_viewer)):
     total_users = db.query(func.count(User.id)).scalar() or 0
     total_orders = db.query(func.count(Transaction.id)).scalar() or 0
 

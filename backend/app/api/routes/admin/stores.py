@@ -38,8 +38,10 @@ def list_stores(
 ):
     if page < 1:
         raise HTTPException(status_code=400, detail="page must be >= 1")
-    if limit < 1 or limit > 200:
-        raise HTTPException(status_code=400, detail="limit must be 1..200")
+    if limit < 1:
+        raise HTTPException(status_code=400, detail="limit must be >= 1")
+    if limit > 50:
+        limit = 50
 
     q = db.query(Store)
     total_items = q.count()
