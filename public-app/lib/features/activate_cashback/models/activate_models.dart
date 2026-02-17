@@ -15,8 +15,7 @@ class ActivateCashbackResponse {
   });
 
   factory ActivateCashbackResponse.fromJson(Map<String, dynamic> json) {
-    final deepLinkValue =
-        (json['affiliate_redirect_url'] ?? json['deep_link'] ?? '').toString();
+    final deepLinkValue = (json['deep_link'] ?? json['affiliate_redirect_url'] ?? '').toString();
     return ActivateCashbackResponse(
       deepLink: deepLinkValue,
       clickId: (json['click_id'] ?? '').toString(),

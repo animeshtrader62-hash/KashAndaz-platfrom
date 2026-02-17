@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 from sqlalchemy import create_engine
@@ -53,7 +54,14 @@ async def test_redirect_by_tracking_id_302_uses_stored_click_redirect_url(client
         role="admin",
     )
     user = models.User(name="User", email="user@redir.test", phone="111", hashed_password="x")
-    store = models.Store(name="Amazon", cashback_rate="5%", cashback_type="percentage", is_active=True)
+    store = models.Store(
+        name="Amazon",
+        store_slug="amazon",
+        logo_url="https://example.com/amazon.png",
+        cashback_rate=5,
+        cashback_type="percentage",
+        is_active=True,
+    )
     db_session_override.add_all([admin, user, store])
     db_session_override.commit()
 
@@ -70,7 +78,12 @@ async def test_redirect_by_tracking_id_302_uses_stored_click_redirect_url(client
     async with client as ac:
         res = await ac.get("/api/r/KA-TEST-123", follow_redirects=False)
         assert res.status_code == 302
-        assert res.headers.get("location") == "https://example.com/immutable"
+        loc = res.headers.get("location")
+        assert loc
+        parts = urlsplit(loc)
+        assert f"{parts.scheme}://{parts.netloc}{parts.path}" == "https://example.com/immutable"
+        qs = parse_qs(parts.query)
+        assert qs.get("aff_click_id") == ["KA-TEST-123"]
 
 
 @pytest.mark.anyio
@@ -83,7 +96,14 @@ async def test_redirect_legacy_click_backfills_and_becomes_immutable(client, db_
         role="admin",
     )
     user = models.User(name="User", email="user@immut.test", phone="111", hashed_password="x")
-    store = models.Store(name="Amazon", cashback_rate="5%", cashback_type="percentage", is_active=True)
+    store = models.Store(
+        name="Amazon",
+        store_slug="amazon",
+        logo_url="https://example.com/amazon.png",
+        cashback_rate=5,
+        cashback_type="percentage",
+        is_active=True,
+    )
     db_session_override.add_all([admin, user, store])
     db_session_override.commit()
 
@@ -109,7 +129,12 @@ async def test_redirect_legacy_click_backfills_and_becomes_immutable(client, db_
     async with client as ac:
         res1 = await ac.get("/api/r/KA-LEGACY-1", follow_redirects=False)
         assert res1.status_code == 302
-        assert res1.headers.get("location") == "https://example.com/original"
+        loc1 = res1.headers.get("location")
+        assert loc1
+        parts1 = urlsplit(loc1)
+        assert f"{parts1.scheme}://{parts1.netloc}{parts1.path}" == "https://example.com/original"
+        qs1 = parse_qs(parts1.query)
+        assert qs1.get("aff_click_id") == ["KA-LEGACY-1"]
 
         # Offer changes later must NOT change existing click redirect.
         offer.affiliate_redirect_url = "https://example.com/changed"
@@ -118,11 +143,20 @@ async def test_redirect_legacy_click_backfills_and_becomes_immutable(client, db_
 
         # The click should have been backfilled (redirect_url stored).
         db_session_override.refresh(click)
-        assert click.redirect_url == "https://example.com/original"
+        assert click.redirect_url
+        stored = urlsplit(click.redirect_url)
+        assert f"{stored.scheme}://{stored.netloc}{stored.path}" == "https://example.com/original"
+        stored_qs = parse_qs(stored.query)
+        assert stored_qs.get("aff_click_id") == ["KA-LEGACY-1"]
 
         res2 = await ac.get("/api/r/KA-LEGACY-1", follow_redirects=False)
         assert res2.status_code == 302
-        assert res2.headers.get("location") == "https://example.com/original"
+        loc2 = res2.headers.get("location")
+        assert loc2
+        parts2 = urlsplit(loc2)
+        assert f"{parts2.scheme}://{parts2.netloc}{parts2.path}" == "https://example.com/original"
+        qs2 = parse_qs(parts2.query)
+        assert qs2.get("aff_click_id") == ["KA-LEGACY-1"]
 
 
 @pytest.mark.anyio
@@ -136,7 +170,14 @@ async def test_redirect_invalid_tracking_id_404(client, db_session_override):
 @pytest.mark.anyio
 async def test_redirect_expired_click_410(client, db_session_override):
     user = models.User(name="User", email="user@exp.test", phone="111", hashed_password="x")
-    store = models.Store(name="Amazon", cashback_rate="5%", cashback_type="percentage", is_active=True)
+    store = models.Store(
+        name="Amazon",
+        store_slug="amazon",
+        logo_url="https://example.com/amazon.png",
+        cashback_rate=5,
+        cashback_type="percentage",
+        is_active=True,
+    )
     db_session_override.add_all([user, store])
     db_session_override.commit()
 

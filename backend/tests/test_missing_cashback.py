@@ -43,7 +43,13 @@ def client(db_session_override):
 @pytest.mark.anyio
 async def test_missing_cashback_submit_and_list(client, db_session_override):
     user = models.User(name="User", email="mc@test.com", phone="111", hashed_password="x")
-    store = models.Store(name="Amazon", cashback_rate="5%", cashback_type="percentage")
+    store = models.Store(
+        name="Amazon",
+        store_slug="amazon",
+        logo_url="https://example.com/amazon.png",
+        cashback_rate=5,
+        cashback_type="percentage",
+    )
     db_session_override.add_all([user, store])
     db_session_override.commit()
 

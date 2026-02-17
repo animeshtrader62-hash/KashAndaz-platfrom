@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { adminApi } from '../api/admin'
-import type { AdminStoreListItem, OfferCreate, OfferOut, OfferUpdate } from '../api/types'
+import type { AdminStoreListItem, OfferCreate, OfferOut, OfferUpdate, OfferType } from '../api/types'
 import { ApiError } from '../api/errors'
 import { useAuth } from '../auth/AuthContext'
 import { Modal } from '../components/Modal'
@@ -13,6 +13,19 @@ import { fromIsoToDateTimeLocal, formatDateShort, toIsoFromDateTimeLocal } from 
 import { validateDirectImageUrl } from '../utils/imageUrl'
 
 type OfferEditorMode = 'create' | 'edit'
+
+const STORE_CATEGORIES = [
+  { value: '', label: '(none)' },
+  { value: 'fashion', label: 'fashion' },
+  { value: 'electronics', label: 'electronics' },
+  { value: 'beauty', label: 'beauty' },
+  { value: 'travel', label: 'travel' },
+  { value: 'food', label: 'food' },
+  { value: 'home', label: 'home' },
+  { value: 'finance', label: 'finance' },
+  { value: 'groceries', label: 'groceries' },
+  { value: 'other', label: 'other' },
+] as const
 
 export function OffersPage() {
   const { token, handleApiError } = useAuth()
@@ -35,6 +48,8 @@ export function OffersPage() {
   const [formDescription, setFormDescription] = useState('')
   const [formAffiliateUrl, setFormAffiliateUrl] = useState('')
   const [formCashbackText, setFormCashbackText] = useState('')
+  const [formOfferType, setFormOfferType] = useState<OfferType>('deal')
+  const [formIsFeatured, setFormIsFeatured] = useState(false)
   const [formStartAt, setFormStartAt] = useState('')
   const [formEndAt, setFormEndAt] = useState('')
   const [formStatus, setFormStatus] = useState<'active' | 'inactive'>('inactive')
@@ -50,9 +65,21 @@ export function OffersPage() {
 
   const storeLogoValidation = useMemo(() => {
     const v = storeFormLogoUrl.trim()
-    if (!v) return { ok: true } as const
+    if (!v) return { ok: false, reason: 'Logo URL is required.' } as const
     return validateDirectImageUrl(v, { requireHttps: true })
   }, [storeFormLogoUrl])
+
+  const storeCashbackRateValidation = useMemo(() => {
+    const v = storeFormCashbackRate.trim()
+    if (!v) return { ok: false, reason: 'Cashback rate is required.' } as const
+    if (v.includes('%')) return { ok: false, reason: 'Enter a number only (do not include %).' } as const
+    const n = Number(v)
+    if (!Number.isFinite(n)) return { ok: false, reason: 'Cashback rate must be a valid number.' } as const
+    if (n < 0) return { ok: false, reason: 'Cashback rate must be >= 0.' } as const
+    if (storeFormCashbackType === 'percentage' && n > 100)
+      return { ok: false, reason: 'Percentage cashback rate must be <= 100.' } as const
+    return { ok: true } as const
+  }, [storeFormCashbackRate, storeFormCashbackType])
 
   const storeNameById = useMemo(() => {
     const m = new Map<string, string>()
@@ -86,14 +113,14 @@ export function OffersPage() {
 
   const canCreateStore = useMemo(() => {
     if (!storeFormName.trim()) return false
-    if (!storeFormCashbackRate.trim()) return false
+    if (!storeCashbackRateValidation.ok) return false
     if (!storeFormCashbackType.trim()) return false
     if (!storeLogoValidation.ok) return false
     if (storeFormAffiliateBaseUrl.trim() && !storeFormAffiliateBaseUrl.trim().startsWith('https://')) return false
     return true
   }, [
     storeFormAffiliateBaseUrl,
-    storeFormCashbackRate,
+    storeCashbackRateValidation.ok,
     storeFormCashbackType,
     storeFormName,
     storeLogoValidation.ok,
@@ -105,6 +132,8 @@ export function OffersPage() {
     setFormDescription('')
     setFormAffiliateUrl('')
     setFormCashbackText('')
+    setFormOfferType('deal')
+    setFormIsFeatured(false)
     setFormStartAt('')
     setFormEndAt('')
     setFormStatus('inactive')
@@ -140,6 +169,8 @@ export function OffersPage() {
     setFormDescription(o.description ?? '')
     setFormAffiliateUrl(o.affiliate_redirect_url)
     setFormCashbackText(o.cashback_text)
+    setFormOfferType(o.offer_type)
+    setFormIsFeatured(!!o.is_featured)
     setFormStartAt(fromIsoToDateTimeLocal(o.start_at))
     setFormEndAt(fromIsoToDateTimeLocal(o.end_at))
     setFormStatus(o.status)
@@ -175,7 +206,7 @@ export function OffersPage() {
     try {
       const payload = {
         name: storeFormName.trim(),
-        logo_url: storeFormLogoUrl.trim() ? storeFormLogoUrl.trim() : null,
+        logo_url: storeFormLogoUrl.trim(),
         affiliate_base_url: storeFormAffiliateBaseUrl.trim() ? storeFormAffiliateBaseUrl.trim() : null,
         cashback_rate: storeFormCashbackRate.trim(),
         cashback_type: storeFormCashbackType.trim(),
@@ -234,6 +265,8 @@ export function OffersPage() {
           description: formDescription.trim() ? formDescription.trim() : null,
           affiliate_redirect_url: formAffiliateUrl.trim(),
           cashback_text: formCashbackText.trim(),
+          offer_type: formOfferType,
+          is_featured: formIsFeatured,
           start_at,
           end_at,
           status: formStatus,
@@ -247,6 +280,8 @@ export function OffersPage() {
           description: formDescription.trim() ? formDescription.trim() : null,
           affiliate_redirect_url: formAffiliateUrl.trim(),
           cashback_text: formCashbackText.trim(),
+          offer_type: formOfferType,
+          is_featured: formIsFeatured,
           start_at,
           end_at,
           status: formStatus,
@@ -268,6 +303,8 @@ export function OffersPage() {
     formCashbackText,
     formDescription,
     formEndAt,
+    formIsFeatured,
+    formOfferType,
     formStartAt,
     formStatus,
     formStoreId,
@@ -529,6 +566,30 @@ export function OffersPage() {
           </label>
 
           <label className="block">
+            <div className="mb-1 text-sm font-semibold text-slate-700">Offer type</div>
+            <select
+              value={formOfferType}
+              onChange={(e) => setFormOfferType(e.target.value as OfferType)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600"
+            >
+              <option value="deal">deal</option>
+              <option value="coupon">coupon</option>
+              <option value="bank_offer">bank_offer</option>
+              <option value="new_user">new_user</option>
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formIsFeatured}
+              onChange={(e) => setFormIsFeatured(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            <div className="text-sm font-medium text-slate-700">Featured</div>
+          </label>
+
+          <label className="block">
             <div className="mb-1 text-sm font-semibold text-slate-700">Start at</div>
             <input
               type="datetime-local"
@@ -614,7 +675,7 @@ export function OffersPage() {
               Paste a direct image URL ending in .png/.jpg/.jpeg/.webp/.svg.
               Website URLs and Google Images links will not work.
             </div>
-            {storeFormLogoUrl.trim() && !storeLogoValidation.ok ? (
+            {!storeLogoValidation.ok ? (
               <div className="mt-1 text-xs text-orange-600">{storeLogoValidation.reason}</div>
             ) : null}
           </label>
@@ -656,6 +717,9 @@ export function OffersPage() {
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
               placeholder="5"
             />
+            {!storeCashbackRateValidation.ok ? (
+              <div className="mt-1 text-xs text-orange-600">{storeCashbackRateValidation.reason}</div>
+            ) : null}
           </label>
 
           <label className="block">
@@ -672,12 +736,17 @@ export function OffersPage() {
 
           <label className="block">
             <div className="mb-1 text-sm font-semibold text-slate-700">Category (optional)</div>
-            <input
+            <select
               value={storeFormCategory}
               onChange={(e) => setStoreFormCategory(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
-              placeholder="Fashion"
-            />
+            >
+              {STORE_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="block">

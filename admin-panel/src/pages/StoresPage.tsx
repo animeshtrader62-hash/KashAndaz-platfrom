@@ -14,6 +14,19 @@ import { validateDirectImageUrl } from '../utils/imageUrl'
 
 type StoreEditorMode = 'create' | 'edit'
 
+const STORE_CATEGORIES = [
+  { value: '', label: '(none)' },
+  { value: 'fashion', label: 'fashion' },
+  { value: 'electronics', label: 'electronics' },
+  { value: 'beauty', label: 'beauty' },
+  { value: 'travel', label: 'travel' },
+  { value: 'food', label: 'food' },
+  { value: 'home', label: 'home' },
+  { value: 'finance', label: 'finance' },
+  { value: 'groceries', label: 'groceries' },
+  { value: 'other', label: 'other' },
+] as const
+
 export function StoresPage() {
   const { token, handleApiError } = useAuth()
   const toast = useToast()
@@ -27,35 +40,70 @@ export function StoresPage() {
   const [editingStore, setEditingStore] = useState<AdminStoreListItem | null>(null)
 
   const [formName, setFormName] = useState('')
+  const [formSlug, setFormSlug] = useState('')
   const [formLogoUrl, setFormLogoUrl] = useState('')
   const [formAffiliateBaseUrl, setFormAffiliateBaseUrl] = useState('')
   const [formCashbackRate, setFormCashbackRate] = useState('')
   const [formCashbackType, setFormCashbackType] = useState('percentage')
+  const [formPopularityScore, setFormPopularityScore] = useState('0')
+  const [formFeaturedStore, setFormFeaturedStore] = useState(false)
   const [formCategory, setFormCategory] = useState('')
   const [formIsActive, setFormIsActive] = useState(true)
 
   const logoValidation = useMemo(() => {
     const v = formLogoUrl.trim()
-    if (!v) return { ok: true } as const
+    if (!v) {
+      if (editorMode === 'create') return { ok: false, reason: 'Logo URL is required.' } as const
+      return { ok: true } as const
+    }
     return validateDirectImageUrl(v, { requireHttps: true })
-  }, [formLogoUrl])
+  }, [editorMode, formLogoUrl])
+
+  const cashbackRateValidation = useMemo(() => {
+    const v = formCashbackRate.trim()
+    if (!v) {
+      if (editorMode === 'create') return { ok: false, reason: 'Cashback rate is required.' } as const
+      return { ok: true } as const
+    }
+
+    if (v.includes('%')) return { ok: false, reason: 'Enter a number only (do not include %).' } as const
+
+    const n = Number(v)
+    if (!Number.isFinite(n)) return { ok: false, reason: 'Cashback rate must be a valid number.' } as const
+    if (n < 0) return { ok: false, reason: 'Cashback rate must be >= 0.' } as const
+    if (formCashbackType === 'percentage' && n > 100)
+      return { ok: false, reason: 'Percentage cashback rate must be <= 100.' } as const
+    return { ok: true } as const
+  }, [editorMode, formCashbackRate, formCashbackType])
+
+  const popularityValidation = useMemo(() => {
+    const v = formPopularityScore.trim()
+    if (!v) return { ok: true } as const
+    const n = Number(v)
+    if (!Number.isFinite(n)) return { ok: false, reason: 'Popularity score must be a number.' } as const
+    if (n < 0) return { ok: false, reason: 'Popularity score must be >= 0.' } as const
+    if (!Number.isInteger(n)) return { ok: false, reason: 'Popularity score must be an integer.' } as const
+    return { ok: true } as const
+  }, [formPopularityScore])
 
   const canSubmit = useMemo(() => {
     if (!formName.trim()) return false
-    if (editorMode === 'create') {
-      if (!formCashbackRate.trim()) return false
-      if (!formCashbackType.trim()) return false
-    }
+    if (editorMode === 'create' && !formCashbackType.trim()) return false
     if (!logoValidation.ok) return false
+    if (!cashbackRateValidation.ok) return false
+    if (!popularityValidation.ok) return false
     return true
-  }, [editorMode, formCashbackRate, formCashbackType, formName, logoValidation.ok])
+  }, [cashbackRateValidation.ok, editorMode, formCashbackType, formName, logoValidation.ok, popularityValidation.ok])
 
   const resetForm = useCallback(() => {
     setFormName('')
+    setFormSlug('')
     setFormLogoUrl('')
     setFormAffiliateBaseUrl('')
     setFormCashbackRate('')
     setFormCashbackType('percentage')
+    setFormPopularityScore('0')
+    setFormFeaturedStore(false)
     setFormCategory('')
     setFormIsActive(true)
   }, [])
@@ -71,12 +119,15 @@ export function StoresPage() {
     setEditorMode('edit')
     setEditingStore(s)
     setFormName(s.name ?? '')
+    setFormSlug(s.store_slug ?? '')
     setFormLogoUrl(s.logo_url ?? '')
     setFormAffiliateBaseUrl(s.affiliate_base_url ?? '')
     setFormIsActive(!!s.is_active)
-    setFormCashbackRate('')
-    setFormCashbackType('percentage')
-    setFormCategory('')
+    setFormCashbackRate(s.cashback_rate != null ? String(s.cashback_rate) : '')
+    setFormCashbackType((s.cashback_type as string) || 'percentage')
+    setFormPopularityScore(String(s.popularity_score ?? 0))
+    setFormFeaturedStore(!!s.featured_store)
+    setFormCategory((s.category as string) || '')
     setEditorOpen(true)
   }, [])
 
@@ -106,10 +157,13 @@ export function StoresPage() {
       if (editorMode === 'create') {
         const payload: AdminStoreCreate = {
           name: formName.trim(),
-          logo_url: formLogoUrl.trim() ? formLogoUrl.trim() : null,
+          store_slug: formSlug.trim() ? formSlug.trim() : null,
+          logo_url: formLogoUrl.trim(),
           affiliate_base_url: formAffiliateBaseUrl.trim() ? formAffiliateBaseUrl.trim() : null,
           cashback_rate: formCashbackRate.trim(),
           cashback_type: formCashbackType.trim(),
+          popularity_score: formPopularityScore.trim() ? Number(formPopularityScore.trim()) : 0,
+          featured_store: formFeaturedStore,
           category: formCategory.trim() ? formCategory.trim() : null,
           is_active: formIsActive,
         }
@@ -119,10 +173,13 @@ export function StoresPage() {
         if (!editingStore) return
         const payload: AdminStoreUpdate = {
           name: formName.trim() ? formName.trim() : undefined,
+          store_slug: formSlug.trim() ? formSlug.trim() : undefined,
           logo_url: formLogoUrl.trim() ? formLogoUrl.trim() : undefined,
           affiliate_base_url: formAffiliateBaseUrl.trim() ? formAffiliateBaseUrl.trim() : undefined,
           cashback_rate: formCashbackRate.trim() ? formCashbackRate.trim() : undefined,
           cashback_type: formCashbackType.trim() ? formCashbackType.trim() : undefined,
+          popularity_score: formPopularityScore.trim() ? Number(formPopularityScore.trim()) : undefined,
+          featured_store: formFeaturedStore,
           category: formCategory.trim() ? formCategory.trim() : undefined,
           is_active: formIsActive,
         }
@@ -298,6 +355,17 @@ export function StoresPage() {
           </label>
 
           <label className="block md:col-span-2">
+            <div className="mb-1 text-sm font-semibold text-slate-700">Slug (optional)</div>
+            <input
+              value={formSlug}
+              onChange={(e) => setFormSlug(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              placeholder="amazon"
+            />
+            <div className="mt-1 text-xs text-slate-500">Leave blank to auto-generate from the name.</div>
+          </label>
+
+          <label className="block md:col-span-2">
             <div className="mb-1 text-sm font-semibold text-slate-700">Logo URL (direct HTTPS image)</div>
             <input
               value={formLogoUrl}
@@ -310,7 +378,7 @@ export function StoresPage() {
               Paste a direct image URL ending in .png/.jpg/.jpeg/.webp/.svg.
               Google Images links and website URLs (like https://www.shopsy.in) won’t render as logos.
             </div>
-            {formLogoUrl.trim() && !logoValidation.ok ? (
+            {!logoValidation.ok ? (
               <div className="mt-1 text-xs text-orange-600">{logoValidation.reason}</div>
             ) : null}
           </label>
@@ -347,10 +415,10 @@ export function StoresPage() {
               value={formCashbackRate}
               onChange={(e) => setFormCashbackRate(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
-              placeholder={editorMode === 'create' ? '5%' : '(optional)'}
+              placeholder={formCashbackType === 'percentage' ? '5' : '150'}
             />
-            {editorMode === 'edit' ? (
-              <div className="mt-1 text-xs text-slate-500">Leave blank to keep unchanged.</div>
+            {!cashbackRateValidation.ok ? (
+              <div className="mt-1 text-xs text-orange-600">{cashbackRateValidation.reason}</div>
             ) : null}
           </label>
 
@@ -364,19 +432,45 @@ export function StoresPage() {
               <option value="percentage">percentage</option>
               <option value="flat">flat</option>
             </select>
-            {editorMode === 'edit' ? (
-              <div className="mt-1 text-xs text-slate-500">Only used if you set cashback rate too.</div>
+          </label>
+
+          <label className="block">
+            <div className="mb-1 text-sm font-semibold text-slate-700">Popularity score</div>
+            <input
+              value={formPopularityScore}
+              onChange={(e) => setFormPopularityScore(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+              placeholder="0"
+              inputMode="numeric"
+            />
+            {!popularityValidation.ok ? (
+              <div className="mt-1 text-xs text-orange-600">{popularityValidation.reason}</div>
             ) : null}
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={formFeaturedStore}
+              onChange={(e) => setFormFeaturedStore(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            <div className="text-sm font-medium text-slate-700">Featured store</div>
           </label>
 
           <label className="block md:col-span-2">
             <div className="mb-1 text-sm font-semibold text-slate-700">Category</div>
-            <input
+            <select
               value={formCategory}
               onChange={(e) => setFormCategory(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
-              placeholder={editorMode === 'create' ? 'Shopping' : '(optional)'}
-            />
+            >
+              {STORE_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="flex items-center gap-2 md:col-span-2">

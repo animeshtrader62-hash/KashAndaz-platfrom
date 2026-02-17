@@ -11,6 +11,38 @@ from app.schemas.admin.store import AdminStoreCreate, AdminStoreOut, AdminStoreU
 router = APIRouter(prefix="/admin/stores", tags=["admin"])
 
 
+def _slugify(value: str) -> str:
+    cleaned = (value or "").strip().lower()
+    out: list[str] = []
+    prev_dash = False
+    for ch in cleaned:
+        is_alnum = ("a" <= ch <= "z") or ("0" <= ch <= "9")
+        if is_alnum:
+            out.append(ch)
+            prev_dash = False
+        else:
+            if not prev_dash:
+                out.append("-")
+                prev_dash = True
+    slug = "".join(out).strip("-")
+    return slug or "store"
+
+
+def _unique_slug(db: Session, desired: str, *, exclude_store_id: str | None = None) -> str:
+    base = _slugify(desired)
+    slug = base
+    i = 2
+    while True:
+        q = db.query(Store.id).filter(Store.store_slug == slug)
+        if exclude_store_id:
+            q = q.filter(Store.id != exclude_store_id)
+        exists = q.first()
+        if not exists:
+            return slug
+        slug = f"{base}-{i}"
+        i += 1
+
+
 def _validate_https_logo(url: str | None) -> str | None:
     if url is None:
         return None
@@ -58,8 +90,14 @@ def list_stores(
             {
                 "id": s.id,
                 "name": s.name,
+                "store_slug": s.store_slug,
                 "logo_url": s.logo_url,
                 "affiliate_base_url": s.affiliate_base_url,
+                "cashback_rate": s.cashback_rate,
+                "cashback_type": s.cashback_type,
+                "popularity_score": getattr(s, "popularity_score", 0) or 0,
+                "featured_store": bool(getattr(s, "featured_store", False)),
+                "category": s.category,
                 "is_active": s.is_active,
                 "created_at": s.created_at,
             }
@@ -79,14 +117,23 @@ def create_store(
     db: Session = Depends(get_db),
     admin=Depends(require_admin),
 ):
+    if not payload.logo_url:
+        raise HTTPException(status_code=400, detail="logo_url is required")
     logo_url = _validate_https_logo(payload.logo_url)
+    if logo_url is None:
+        raise HTTPException(status_code=400, detail="logo_url is required")
+
+    slug = _unique_slug(db, payload.store_slug or payload.name)
 
     store = Store(
         name=payload.name,
+        store_slug=slug,
         logo_url=logo_url,
         affiliate_base_url=(payload.affiliate_base_url.strip() if payload.affiliate_base_url else None),
-        cashback_rate=payload.cashback_rate,
+        cashback_rate=float(payload.cashback_rate),
         cashback_type=payload.cashback_type,
+        popularity_score=int(payload.popularity_score or 0),
+        featured_store=bool(payload.featured_store),
         category=(payload.category.strip() if payload.category else None),
         is_active=payload.is_active,
     )
@@ -98,10 +145,13 @@ def create_store(
     return AdminStoreOut(
         id=store.id,
         name=store.name,
+        store_slug=store.store_slug,
         logo_url=store.logo_url,
         affiliate_base_url=store.affiliate_base_url,
         cashback_rate=store.cashback_rate,
         cashback_type=store.cashback_type,
+        popularity_score=getattr(store, "popularity_score", 0) or 0,
+        featured_store=bool(getattr(store, "featured_store", False)),
         category=store.category,
         is_active=store.is_active,
     )
@@ -119,15 +169,21 @@ def update_store(
         raise HTTPException(status_code=404, detail="Store not found")
 
     if payload.logo_url is not None:
-        store.logo_url = _validate_https_logo(payload.logo_url)
+        store.logo_url = _validate_https_logo(payload.logo_url) or store.logo_url
     if payload.name is not None:
         store.name = payload.name
+    if payload.store_slug is not None:
+        store.store_slug = _unique_slug(db, payload.store_slug, exclude_store_id=store.id)
     if payload.affiliate_base_url is not None:
         store.affiliate_base_url = payload.affiliate_base_url.strip() or None
     if payload.cashback_rate is not None:
-        store.cashback_rate = payload.cashback_rate
+        store.cashback_rate = float(payload.cashback_rate)
     if payload.cashback_type is not None:
         store.cashback_type = payload.cashback_type
+    if payload.popularity_score is not None:
+        store.popularity_score = int(payload.popularity_score)
+    if payload.featured_store is not None:
+        store.featured_store = bool(payload.featured_store)
     if payload.category is not None:
         store.category = payload.category.strip() or None
     if payload.is_active is not None:
@@ -140,10 +196,13 @@ def update_store(
     return AdminStoreOut(
         id=store.id,
         name=store.name,
+        store_slug=store.store_slug,
         logo_url=store.logo_url,
         affiliate_base_url=store.affiliate_base_url,
         cashback_rate=store.cashback_rate,
         cashback_type=store.cashback_type,
+        popularity_score=getattr(store, "popularity_score", 0) or 0,
+        featured_store=bool(getattr(store, "featured_store", False)),
         category=store.category,
         is_active=store.is_active,
     )

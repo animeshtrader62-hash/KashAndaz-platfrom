@@ -54,7 +54,14 @@ def _sign(raw_body: bytes) -> str:
 @pytest.mark.anyio
 async def test_webhook_tracking_is_idempotent_for_duplicates(client, db_session_override):
     user = models.User(name="User", email="user@wh.test", phone="111", hashed_password="x")
-    store = models.Store(name="Amazon", cashback_rate="5%", cashback_type="percentage", is_active=True)
+    store = models.Store(
+        name="Amazon",
+        store_slug="amazon",
+        logo_url="https://example.com/amazon.png",
+        cashback_rate=5,
+        cashback_type="percentage",
+        is_active=True,
+    )
     db_session_override.add_all([user, store])
     db_session_override.commit()
 

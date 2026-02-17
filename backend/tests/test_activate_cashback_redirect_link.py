@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from urllib.parse import parse_qs, urlsplit
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -56,7 +57,14 @@ async def test_activate_cashback_returns_tracking_redirect_url(client, db_sessio
         role="admin",
     )
     user = models.User(name="User", email="act@test.com", phone="111", hashed_password="x")
-    store = models.Store(name="Amazon", cashback_rate="5%", cashback_type="percentage", is_active=True)
+    store = models.Store(
+        name="Amazon",
+        store_slug="amazon",
+        logo_url="https://example.com/amazon.png",
+        cashback_rate=5,
+        cashback_type="percentage",
+        is_active=True,
+    )
     db_session_override.add_all([admin, user, store])
     db_session_override.commit()
 
@@ -99,7 +107,12 @@ async def test_activate_cashback_returns_tracking_redirect_url(client, db_sessio
         # Integration: activate -> redirect must go to the stored offer URL.
         redir = await ac.get(f"/api/r/{tracking_id}", follow_redirects=False)
         assert redir.status_code == 302
-        assert redir.headers.get("location") == "https://example.com/final"
+        loc = redir.headers.get("location")
+        assert loc
+        parts = urlsplit(loc)
+        assert f"{parts.scheme}://{parts.netloc}{parts.path}" == "https://example.com/final"
+        qs = parse_qs(parts.query)
+        assert qs.get("aff_click_id") == [tracking_id]
 
         # Immutability: offer URL changes later must NOT change existing click redirect.
         offer.affiliate_redirect_url = "https://example.com/changed"
@@ -108,4 +121,9 @@ async def test_activate_cashback_returns_tracking_redirect_url(client, db_sessio
 
         redir2 = await ac.get(f"/api/r/{tracking_id}", follow_redirects=False)
         assert redir2.status_code == 302
-        assert redir2.headers.get("location") == "https://example.com/final"
+        loc2 = redir2.headers.get("location")
+        assert loc2
+        parts2 = urlsplit(loc2)
+        assert f"{parts2.scheme}://{parts2.netloc}{parts2.path}" == "https://example.com/final"
+        qs2 = parse_qs(parts2.query)
+        assert qs2.get("aff_click_id") == [tracking_id]

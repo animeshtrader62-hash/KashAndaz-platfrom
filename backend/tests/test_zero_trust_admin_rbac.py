@@ -145,7 +145,14 @@ async def test_claims_access_by_role_and_transitions_and_audit_logs(client, db_s
         hashed_password="x",
         role="super_admin",
     )
-    store = models.Store(name="S", cashback_rate="1%", cashback_type="percentage", is_active=True)
+    store = models.Store(
+        name="S",
+        store_slug="s",
+        logo_url="https://example.com/s.png",
+        cashback_rate=1,
+        cashback_type="percentage",
+        is_active=True,
+    )
     db_session_override.add_all([viewer, admin, super_admin, store])
     db_session_override.flush()
     claim = models.Claim(user_id=viewer.id, store_id=store.id, order_id="ORDER-1", description=None)
@@ -311,7 +318,14 @@ async def test_api_pressure_limits_enforced_max_50(client, db_session_override):
     db_session_override.add(admin)
     # create 60 stores
     stores = [
-        models.Store(name=f"S{i}", cashback_rate="1%", cashback_type="percentage", is_active=True)
+        models.Store(
+            name=f"S{i}",
+            store_slug=f"s{i}",
+            logo_url=f"https://example.com/s{i}.png",
+            cashback_rate=1,
+            cashback_type="percentage",
+            is_active=True,
+        )
         for i in range(60)
     ]
     db_session_override.add_all(stores)

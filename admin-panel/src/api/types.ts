@@ -18,22 +18,46 @@ export type Pagination = {
   total_items: number
 }
 
+export type CashbackType = 'percentage' | 'flat'
+
+export type StoreCategory =
+  | 'fashion'
+  | 'electronics'
+  | 'beauty'
+  | 'travel'
+  | 'food'
+  | 'home'
+  | 'finance'
+  | 'groceries'
+  | 'other'
+
+export type OfferType = 'coupon' | 'deal' | 'bank_offer' | 'new_user'
+
 export type AdminStoreListItem = {
   id: string
   name: string
-  logo_url?: string | null
+  store_slug: string
+  logo_url: string
   affiliate_base_url?: string | null
+  cashback_rate: number | string
+  cashback_type: CashbackType
+  popularity_score: number
+  featured_store: boolean
+  category?: StoreCategory | null
   is_active: boolean
   created_at?: string | null
 }
 
 export type AdminStoreCreate = {
   name: string
-  logo_url?: string | null
+  store_slug?: string | null
+  logo_url: string
   affiliate_base_url?: string | null
-  cashback_rate: string
-  cashback_type: string
-  category?: string | null
+  cashback_rate: number | string
+  cashback_type: CashbackType
+  popularity_score?: number
+  featured_store?: boolean
+  category?: StoreCategory | null
   is_active: boolean
 }
 
@@ -51,6 +75,8 @@ export type OfferOut = {
   description?: string | null
   affiliate_redirect_url: string
   cashback_text: string
+  offer_type: OfferType
+  is_featured: boolean
   start_at: string
   end_at: string
   status: 'active' | 'inactive'
@@ -70,6 +96,8 @@ export type OfferCreate = {
   description?: string | null
   affiliate_redirect_url: string
   cashback_text: string
+  offer_type: OfferType
+  is_featured: boolean
   start_at: string
   end_at: string
   status: 'active' | 'inactive'

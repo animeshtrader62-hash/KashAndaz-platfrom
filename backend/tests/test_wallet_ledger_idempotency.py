@@ -28,7 +28,14 @@ def test_wallet_ledger_credit_is_idempotent_under_concurrent_confirm(engine):
     s2 = Session()
     try:
         user = models.User(name="User", email="user@ledger.test", phone="111", hashed_password="x")
-        store = models.Store(name="Amazon", cashback_rate="5%", cashback_type="percentage", is_active=True)
+        store = models.Store(
+            name="Amazon",
+            store_slug="amazon",
+            logo_url="https://example.com/amazon.png",
+            cashback_rate=5,
+            cashback_type="percentage",
+            is_active=True,
+        )
         s1.add_all([user, store])
         s1.commit()
 

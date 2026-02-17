@@ -3,6 +3,7 @@ import secrets
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models import Click, Offer, Store, User
+from app.services.tracking_url import build_offer18_redirect_url
 
 
 def _generate_tracking_id() -> str:
@@ -59,7 +60,7 @@ def activate_cashback(db: Session, user: User, store_id: str):
         store_id=store.id,
         tracking_id=tracking_id,
         offer_id=offer.id,
-        redirect_url=offer.affiliate_redirect_url,
+        redirect_url=build_offer18_redirect_url(offer.affiliate_redirect_url, tracking_id),
         expires_at=expires_at,
     )
     db.add(click)

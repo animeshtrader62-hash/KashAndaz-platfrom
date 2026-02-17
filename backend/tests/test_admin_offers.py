@@ -53,7 +53,14 @@ async def test_admin_offer_create_and_list(client, db_session_override):
         hashed_password="x",
         role="admin",
     )
-    store = models.Store(name="Amazon", cashback_rate="5%", cashback_type="percentage", is_active=True)
+    store = models.Store(
+        name="Amazon",
+        store_slug="amazon",
+        logo_url="https://example.com/amazon.png",
+        cashback_rate=5,
+        cashback_type="percentage",
+        is_active=True,
+    )
     db_session_override.add_all([admin, store])
     db_session_override.commit()
 

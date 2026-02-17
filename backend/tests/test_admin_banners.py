@@ -53,7 +53,14 @@ async def test_admin_banner_create_and_list(client, db_session_override):
         hashed_password="x",
         role="admin",
     )
-    store = models.Store(name="Flipkart", cashback_rate="5%", cashback_type="percentage", is_active=True)
+    store = models.Store(
+        name="Flipkart",
+        store_slug="flipkart",
+        logo_url="https://example.com/flipkart.png",
+        cashback_rate=5,
+        cashback_type="percentage",
+        is_active=True,
+    )
     db_session_override.add_all([admin, store])
     db_session_override.commit()
 

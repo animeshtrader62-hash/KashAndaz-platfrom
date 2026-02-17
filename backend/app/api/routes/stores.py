@@ -25,7 +25,7 @@ def list_stores(
     offset: int = 0,
     db: Session = Depends(get_db),
 ):
-    stores = get_stores(db, category, search, limit=limit, offset=offset)
+    stores, total = get_stores(db, category, search, limit=limit, offset=offset)
 
     # Public store catalog changes infrequently; allow short caching.
     response.headers["Cache-Control"] = "public, max-age=120"
@@ -41,4 +41,14 @@ def list_stores(
             item["store_description"] = STORE_DESCRIPTIONS.get(item.get("name") or "")
         payload.append(item)
 
-    return {"stores": payload}
+    safe_limit = max(1, min(int(limit), 100))
+    safe_offset = max(0, int(offset))
+    return {
+        "stores": payload,
+        "pagination": {
+            "limit": safe_limit,
+            "offset": safe_offset,
+            "total_items": int(total),
+            "has_more": (safe_offset + safe_limit) < int(total),
+        },
+    }

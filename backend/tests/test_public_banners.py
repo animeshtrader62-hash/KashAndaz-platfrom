@@ -52,7 +52,14 @@ async def test_public_banners_filters_and_sorts(client, db_session_override):
         hashed_password="x",
         role="admin",
     )
-    store = models.Store(name="Myntra", cashback_rate="5%", cashback_type="percentage", is_active=True)
+    store = models.Store(
+        name="Myntra",
+        store_slug="myntra",
+        logo_url="https://example.com/myntra.png",
+        cashback_rate=5,
+        cashback_type="percentage",
+        is_active=True,
+    )
     db_session_override.add_all([admin, store])
     db_session_override.commit()
 

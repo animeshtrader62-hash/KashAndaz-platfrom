@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import logging
 import threading
 import time
 
@@ -9,7 +10,11 @@ from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
 
 from app.db.deps import get_db
-from app.models import Click, Offer
+from app.models import Click, Offer, Store
+from app.services.tracking_url import build_offer18_redirect_url
+
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/r", tags=["redirect"])
 
@@ -70,6 +75,10 @@ def redirect_by_tracking_id(
     if not click:
         raise HTTPException(status_code=404, detail="Click not found")
 
+    store = db.query(Store).filter(Store.id == click.store_id).first()
+    if not store or not store.is_active:
+        raise HTTPException(status_code=410, detail="Click expired")
+
     now = _now_utc()
     if getattr(click, "expires_at", None) is not None:
         expires_at = _normalize_utc(click.expires_at)
@@ -78,7 +87,32 @@ def redirect_by_tracking_id(
 
     # Phase 2 deterministic redirect: redirect only to the immutable stored URL.
     if getattr(click, "redirect_url", None):
-        return RedirectResponse(url=click.redirect_url, status_code=302)
+        try:
+            final_url = build_offer18_redirect_url(click.redirect_url, tracking_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid redirect URL")
+
+        # One-time backfill if an old click stored a URL without aff_click_id.
+        if final_url != click.redirect_url:
+            try:
+                click.redirect_url = final_url
+                db.add(click)
+                db.commit()
+            except Exception:
+                db.rollback()
+
+        logger.info(
+            "tracking_redirect",
+            extra={
+                "tracking_id": tracking_id,
+                "click_id": click.id,
+                "user_id": click.user_id,
+                "store_id": click.store_id,
+                "client_ip": client_ip,
+                "user_agent": (request.headers.get("user-agent") or "")[:200],
+            },
+        )
+        return RedirectResponse(url=final_url, status_code=302)
 
     # Backwards compatibility for legacy clicks created before Phase 2 columns existed.
     # One-time resolve + persist, so subsequent redirects become deterministic.
@@ -97,12 +131,28 @@ def redirect_by_tracking_id(
         raise HTTPException(status_code=404, detail="No active offer")
 
     try:
+        final_url = build_offer18_redirect_url(offer.affiliate_redirect_url, tracking_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid redirect URL")
+
+    try:
         click.offer_id = offer.id
-        click.redirect_url = offer.affiliate_redirect_url
+        click.redirect_url = final_url
         db.add(click)
         db.commit()
     except Exception:
         # If persistence fails for any reason, still redirect (best-effort for legacy).
         db.rollback()
 
-    return RedirectResponse(url=offer.affiliate_redirect_url, status_code=302)
+    logger.info(
+        "tracking_redirect_backfill",
+        extra={
+            "tracking_id": tracking_id,
+            "click_id": click.id,
+            "user_id": click.user_id,
+            "store_id": click.store_id,
+            "client_ip": client_ip,
+            "user_agent": (request.headers.get("user-agent") or "")[:200],
+        },
+    )
+    return RedirectResponse(url=final_url, status_code=302)

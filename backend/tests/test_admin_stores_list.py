@@ -60,13 +60,17 @@ async def test_admin_get_stores_authz_and_includes_inactive(client, db_session_o
     )
     active_store = models.Store(
         name="Amazon",
-        cashback_rate="5%",
+        store_slug="amazon",
+        logo_url="https://example.com/amazon.png",
+        cashback_rate=5,
         cashback_type="percentage",
         is_active=True,
     )
     inactive_store = models.Store(
         name="Myntra",
-        cashback_rate="3%",
+        store_slug="myntra",
+        logo_url="https://example.com/myntra.png",
+        cashback_rate=3,
         cashback_type="percentage",
         is_active=False,
     )

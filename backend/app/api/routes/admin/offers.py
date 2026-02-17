@@ -55,6 +55,8 @@ def create_offer(
         description=payload.description.strip() if payload.description else None,
         affiliate_redirect_url=_validate_absolute_url(payload.affiliate_redirect_url),
         cashback_text=payload.cashback_text.strip(),
+        offer_type=payload.offer_type,
+        is_featured=bool(payload.is_featured),
         start_at=payload.start_at,
         end_at=payload.end_at,
         status=payload.status,
@@ -88,6 +90,11 @@ def update_offer(
         offer.affiliate_redirect_url = _validate_absolute_url(payload.affiliate_redirect_url)
     if payload.cashback_text is not None:
         offer.cashback_text = payload.cashback_text.strip()
+
+    if payload.offer_type is not None:
+        offer.offer_type = payload.offer_type
+    if payload.is_featured is not None:
+        offer.is_featured = bool(payload.is_featured)
 
     if payload.start_at is not None:
         offer.start_at = payload.start_at
@@ -148,7 +155,15 @@ def list_offers(
         q = q.filter(Offer.status == status)
 
     total_items = q.count()
-    rows = q.order_by(Offer.start_at.desc()).offset((page - 1) * limit).limit(limit).all()
+    rows = (
+        q.order_by(
+            Offer.is_featured.desc(),
+            Offer.start_at.desc(),
+        )
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
 
     total_pages = (total_items + limit - 1) // limit if limit else 1
     return AdminOffersListResponse(
