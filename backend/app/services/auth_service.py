@@ -22,7 +22,12 @@ def create_user(db: Session, name: str, email: str, password: str, phone: str | 
         phone=phone_value,
         hashed_password=hash_password(password),
         role="user",
+        is_blocked=False,
+        failed_login_attempts=0,
     )
+
+    if user.failed_login_attempts is None:
+        user.failed_login_attempts = 0
     db.add(user)
     db.commit()
     db.refresh(user)
