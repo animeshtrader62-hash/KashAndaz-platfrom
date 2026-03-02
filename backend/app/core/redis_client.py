@@ -74,7 +74,7 @@ async def get_redis() -> AsyncRedisClient | None:
         try:
             await asyncio.wait_for(client.ping(), timeout=_DEFAULT_PING_TIMEOUT_S)
         except Exception as exc:
-            logger.warning("redis_error", error=str(exc))
+            logger.warning("redis_error", error_type=type(exc).__name__)
             try:
                 await client.aclose()
             except Exception:
@@ -93,7 +93,7 @@ async def ping_redis() -> bool:
         await asyncio.wait_for(client.ping(), timeout=_DEFAULT_PING_TIMEOUT_S)
         return True
     except Exception as exc:
-        logger.warning("redis_error", error=str(exc))
+        logger.warning("redis_error", error_type=type(exc).__name__)
         return False
 
 

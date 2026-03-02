@@ -94,7 +94,7 @@ async def check_rate_limit(key: str, limit: int, window_seconds: int) -> bool:
             "redis_error",
             action=action,
             ip=ip,
-            error=str(exc),
+            error_type=type(exc).__name__,
         )
 
         allowed = await _fallback_check_rate_limit(
