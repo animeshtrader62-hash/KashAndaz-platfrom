@@ -14,6 +14,9 @@ migrate_working_dir/
 .venv/
 .pytest_cache/
 
+# Common virtualenv folder name
+env/
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -23,7 +26,19 @@ migrate_working_dir/
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
-#.vscode/
+.vscode/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+**/.env
+
+# Node
+node_modules/
+**/node_modules/
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -35,12 +50,18 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Local databases / audit artifacts
+*.sqlite3
+*.db
+
+# Local backups
+backups/
+
 # Personal documents
 Documents/
 
 # Backend secrets
 backend/.env
-backend/*.db
 
 # Backend runtime artifacts (do not commit)
 backend/uploads/
