@@ -14,6 +14,9 @@ migrate_working_dir/
 .venv/
 .pytest_cache/
 
+# Common virtualenv folder name
+env/
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -49,12 +52,24 @@ tools/
 /build/
 /coverage/
 
+# Local databases / audit artifacts
+*.sqlite3
+*.db
+
 # Backend secrets
 backend/.env
 
 # Local git worktrees / backend copies (do not commit)
 backend-worktree/
 backend/
+
+# Local worktree checkouts and archives (do not commit)
+main-worktree/
+backend-ARCHIVED/
+backend-worktree-ARCHIVED/
+
+# Local backups
+backups/
 
 # Sensitive keys
 Documents/*.pem
